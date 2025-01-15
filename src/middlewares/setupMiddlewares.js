@@ -11,7 +11,11 @@ module.exports = (app) => {
   app.use(
     cors({
       origin: (origin, callback) => {
-        callback(null, true); // Allow all origins
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
       },
       credentials: true, // Allow cookies, headers, etc.
     })
