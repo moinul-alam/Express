@@ -5,7 +5,7 @@ const cookieParser = require('cookie-parser');
 
 module.exports = (app) => {
   const allowedOrigins = [
-    'https://explora-core.vercel.app/', 
+    'https://explora-core.vercel.app', 
     'http://localhost:3000',
   ];
 
