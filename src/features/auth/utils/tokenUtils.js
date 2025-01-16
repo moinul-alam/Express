@@ -15,8 +15,8 @@ const setTokenCookie = (res, token) => {
     res.cookie('jwt', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        maxAge: 60 * 60 * 1000, // 1 hour
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        maxAge: 24 * 60 * 60 * 1000,
+        sameSite: 'none',
     });
 };
 
@@ -25,7 +25,7 @@ const clearTokenCookie = (res) => {
     res.clearCookie('jwt', { 
         httpOnly: true, 
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'Strict',
+        sameSite: 'none',
     });
 };
 
