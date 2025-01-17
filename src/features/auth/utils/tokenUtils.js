@@ -15,7 +15,7 @@ const setTokenCookie = (res, token) => {
     res.cookie('jwt', token, {
         httpOnly: true,
         secure: true, //process.env.NODE_ENV === 'production',
-        domain: 'explora-core.vercel.app' || 'localhost',
+        domain: 'explora-core.vercel.app',
         maxAge: 60 * 60 * 1000,
         sameSite: 'none',
     });
