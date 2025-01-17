@@ -13,13 +13,14 @@ const generateToken = (userID) => {
 // Set secure cookie
 const setTokenCookie = (res, token) => {
     res.cookie('jwt', token, {
-        httpOnly: true,
-        secure: true, //process.env.NODE_ENV === 'production',
-        domain: '.explora-core.vercel.app',
-        maxAge: 60 * 60 * 1000,
-        sameSite: 'none',
+        httpOnly: true,        // Prevents client-side access
+        secure: true,          // Works over HTTPS only
+        sameSite: 'none',      // Required for cross-site cookies
+        maxAge: 60 * 60 * 1000, // 1 hour in milliseconds
+        path: '/',             // Cookie accessible site-wide
     });
 };
+
 
 // Clear cookie for logout
 const clearTokenCookie = (res) => {
