@@ -15,7 +15,7 @@ const setTokenCookie = (res, token) => {
     res.cookie('jwt', token, {
         httpOnly: true,
         secure: true, //process.env.NODE_ENV === 'production',
-        domain: 'explora-core.vercel.app',
+        domain: 'explora-core.vercel.app' || 'localhost',
         maxAge: 60 * 60 * 1000,
         sameSite: 'none',
     });
@@ -25,7 +25,7 @@ const setTokenCookie = (res, token) => {
 const clearTokenCookie = (res) => {
     res.clearCookie('jwt', { 
         httpOnly: true, 
-        secure: process.env.NODE_ENV === 'production',
+        secure: true, //process.env.NODE_ENV === 'production'
         sameSite: 'none',
     });
 };
