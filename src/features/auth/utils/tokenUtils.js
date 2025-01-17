@@ -14,8 +14,9 @@ const generateToken = (userID) => {
 const setTokenCookie = (res, token) => {
     res.cookie('jwt', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 24 * 60 * 60 * 1000,
+        secure: true, //process.env.NODE_ENV === 'production',
+        domain: 'explora-core.vercel.app',
+        maxAge: 60 * 60 * 1000,
         sameSite: 'none',
     });
 };

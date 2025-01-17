@@ -1,15 +1,13 @@
 const express = require('express');
-const helmet = require('helmet');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
 module.exports = (app) => {
   const allowedOrigins = [
     'https://explora-core.vercel.app', 
-    'http://localhost:3000',
+    'http://localhost:5173', // For local development
   ];
 
-  app.use(helmet());
   app.use(cookieParser());
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));

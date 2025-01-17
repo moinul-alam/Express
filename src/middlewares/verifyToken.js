@@ -3,16 +3,23 @@ const { errorResponse } = require('@src/utils/responseFormatter');
 
 const verifyToken = (req, res, next) => {
     try {
-        const token = req.cookies.jwt;
+        const token = req.cookies.jwt || req.headers['authorization']?.split(' ')[1];
         if (!token) {
-            return errorResponse(res, 'Unauthorized', 401);
+            return errorResponse(res, 'Unauthorized: No token provided', 401);
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;
+        req.user = decoded; // Attach decoded payload to request object
         next();
     } catch (err) {
-        return errorResponse(res, 'Invalid token', 403);
+        if (err.name === 'TokenExpiredError') {
+            return errorResponse(res, 'Unauthorized: Token expired', 401);
+        }
+        if (err.name === 'JsonWebTokenError') {
+            return errorResponse(res, 'Unauthorized: Invalid token', 401);
+        }
+        console.error('Token verification error:', err.message);
+        return errorResponse(res, 'Forbidden: Could not verify token', 403);
     }
 };
 
