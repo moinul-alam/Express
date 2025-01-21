@@ -1,18 +1,22 @@
 const api = require('@src/utils/api');
 const { successResponse, errorResponse } = require('@src/utils/responseFormatter');
 
-const searchMedia = async (req, res, next) => {
+const searchMovieOrTv = async (req, res, next) => {
   const searchQuery = req.query.query;
-  const mediaType = req.query.mediaType; // New query parameter for media type
+  const mediaType = req.query.mediaType; // Accept "movie" or "tv" explicitly
   const page = req.query.page || 1;
 
   if (!searchQuery) {
     return errorResponse(res, 'Query parameter is required.', 400);
   }
 
+  if (mediaType && mediaType !== 'movie' && mediaType !== 'tv') {
+    return errorResponse(res, 'Invalid media type. Please use "movie" or "tv".', 400);
+  }
+
   try {
-    // Determine the endpoint based on the mediaType
-    let endpoint = '/search/multi'; // Default to multi search
+    // Decide the endpoint based on `mediaType`
+    let endpoint = '/search/multi';
     if (mediaType === 'movie') {
       endpoint = '/search/movie';
     } else if (mediaType === 'tv') {
@@ -26,25 +30,24 @@ const searchMedia = async (req, res, next) => {
       },
     });
 
-    // Map results to include only the desired fields
-    const results = response.data.results.map((item) => {
-      let mediaType = item.media_type || ''; // Preserve media type if multi search
-      if (endpoint === '/search/movie') mediaType = 'movie';
-      if (endpoint === '/search/tv') mediaType = 'tv';
+    // Filter results: Include only `movie` or `tv` if using `/search/multi`
+    const results = response.data.results.filter(
+      (item) => item.media_type === 'movie' || item.media_type === 'tv'
+    );
 
-      return {
-        id: item.id,
-        mediaType,
-        title: item.title || item.name,
-        poster_path: item.poster_path || item.profile_path,
-      };
-    });
+    // Map results to include only desired fields
+    const formattedResults = results.map((item) => ({
+      id: item.id,
+      mediaType: item.media_type,
+      title: item.title || item.name,
+      poster_path: item.poster_path,
+    }));
 
-    return successResponse(res, 'Search completed successfully', results);
+    return successResponse(res, 'Search completed successfully', formattedResults);
   } catch (error) {
     console.error('Error during search:', error);
-    next(error);
+    return errorResponse(res, 'Error during search', 500, error.message);
   }
 };
 
-module.exports = searchMedia;
+module.exports = searchMovieOrTv;

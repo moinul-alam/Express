@@ -6,6 +6,9 @@ const fetchSimilarMedia = async (req, res, next) => {
   const page = req.query.page || 1;
 
   try {
+    if (mediaType !== 'movie' && mediaType !== 'tv') {
+      return errorResponse(res, 'Invalid media type. Please use "movie" or "tv".', 400);
+    };
     const similar = await api.get(`/${mediaType}/${mediaId}/similar`, {
       params: { page },
     });
