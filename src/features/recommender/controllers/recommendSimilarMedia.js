@@ -4,8 +4,7 @@ const fetchMediaDetailsService = require('@src/features/recommender/services/fet
 const { successResponse, errorResponse } = require('@src/utils/responseFormatter');
 
 const recommendSimilarMedia = async (req, res, next) => {
-  const { mediaType, mediaId } = req.params; 
-  const { n_items = 10 } = req.query; 
+  const { mediaType, mediaId } = req.params;
 
   try {
     // Fetch media details for the given mediaId
@@ -17,18 +16,36 @@ const recommendSimilarMedia = async (req, res, next) => {
 
     const metadata = result.data;
 
+    // Transform the metadata into the expected format
+    const formattedMetadata = {
+      tmdbId: metadata.tmdb_id,
+      metadata: {
+        title: metadata.title || '',
+        overview: metadata.overview || '',
+        release_date: metadata.release_date
+          ? new Date(metadata.release_date).toISOString().split('T')[0]
+          : '',
+        tagline: metadata.tagline || '',
+        genres: metadata.genres ? metadata.genres.map((genre) => genre.name) : [],
+        director: metadata.credits
+          ? metadata.credits
+              .filter((credit) => credit.type === 'director')
+              .map((director) => director.name)
+          : [],
+        cast: metadata.credits
+          ? metadata.credits
+              .filter((credit) => credit.type === 'cast')
+              .map((castMember) => castMember.name)
+          : [],
+      },
+    };
+
+    console.log('Formatted metadata:', formattedMetadata);
+
+    console.log('Formatted metadata:', formattedMetadata);
+
     try {
-      const recommenderResponse = await apiCore.post('/content-based/v1/similar',
-        {
-          tmdbId: parseInt(mediaId, 10),
-          metadata,
-        },
-        {
-          params: {
-            n_items,
-          },
-        }
-      );
+      const recommenderResponse = await apiCore.post('/content-based/v1/similar', formattedMetadata);
 
       if (!recommenderResponse || recommenderResponse.status !== 200) {
         throw new Error('Failed to fetch recommendations from the service');
