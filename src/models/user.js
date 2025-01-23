@@ -66,7 +66,4 @@ userSchema.pre('save', function (next) {
   next();
 });
 
-userSchema.index({ 'info.username': 1 });
-userSchema.index({ 'info.email': 1 });
-
 module.exports = mongoose.model('User', userSchema);

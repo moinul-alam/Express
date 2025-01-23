@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 
-// Helper function for URL validation
 const mediaSchema = new mongoose.Schema(
   {
     data_status: {
@@ -29,12 +28,12 @@ const mediaSchema = new mongoose.Schema(
     original_title: {
       type: String,
       trim: true,
-      default: null,  // Allow null if not provided
+      default: null,
     },
     overview: {
       type: String,
       trim: true,
-      default: null,  // Allow null if not provided
+      default: null,
     },
     genres: [
       {
@@ -44,36 +43,36 @@ const mediaSchema = new mongoose.Schema(
     ],
     release_date: {
       type: Date,
-      default: null,  // Allow null if not provided
+      default: null,
     },
     runtime: {
       type: Number,
       min: [0, 'Runtime must be a positive number'],
-      default: null,  // Allow null if not provided
+      default: null,
     },
     vote_average: {
       type: Number,
       min: [0, 'Vote average must be between 0 and 10'],
       max: [10, 'Vote average must be between 0 and 10'],
-      default: null,  // Allow null if not provided
+      default: null,
     },
     vote_count: {
       type: Number,
       min: [0, 'Vote count must be a positive number'],
-      default: null,  // Allow null if not provided
+      default: null,
     },
     poster_path: {
       type: String,
-      default: null,  // Allow null if not provided
+      default: null,
     },
     backdrop_path: {
       type: String,
-      default: null,  // Allow null if not provided
+      default: null,
     },
     imdb_id: {
       type: String,
       trim: true,
-      default: null,  // Allow null if not provided
+      default: null,
     },
     spoken_languages: [
       {
@@ -83,68 +82,65 @@ const mediaSchema = new mongoose.Schema(
     ],
     release_status: {
       type: String,
-      default: null,  // Allow null if not provided
+      default: null,
     },
     tagline: {
       type: String,
       trim: true,
-      default: null,  // Allow null if not provided
+      default: null,
     },
     homepage: {
       type: String,
-      default: null,  // Allow null if not provided
+      default: null,
     },
     revenue: {
       type: Number,
       min: [0, 'Revenue must be a positive number'],
-      default: null,  // Allow null if not provided
+      default: null,
     },
     budget: {
       type: Number,
       min: [0, 'Budget must be a positive number'],
-      default: null,  // Allow null if not provided
+      default: null,
     },
     adult: {
       type: Boolean,
-      default: null,  // Allow null if not provided
+      default: null,
     },
     credits: [
       {
         type: {
           type: String,
-          default: null,  // Allow null if not provided
+          default: null,
         },
         name: { 
           type: String, 
-          default: null,  // Allow null if not provided
+          default: null,
         },
         id: { 
           type: Number, 
-          default: null,  // Allow null if not provided
+          default: null,
         },
         character: { 
           type: String, 
           trim: true, 
-          default: null,  // Allow null if not provided
+          default: null,
         },
         image: {
           type: String,
-          default: null,  // Allow null if not provided
+          default: null,
         },
       },
     ],
     trailer_id: {
       type: String,
       trim: true,
-      default: null,  // Allow null if not provided
+      default: null,
     },
   },
   { timestamps: true }
 );
 
-// Indexing for quick retrieval
-mediaSchema.index({ media_type: 1, release_date: -1 });
-mediaSchema.index({ tmdb_id: 1 });
 
 const Media = mongoose.model('Media', mediaSchema);
 
