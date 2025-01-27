@@ -1,0 +1,22 @@
+name: Trigger Fetch Job
+
+on:
+  schedule:
+    - cron: "0 * * * *" # Adjust this to run every hour, day, etc. (e.g., daily: "0 0 * * *")
+
+jobs:
+  trigger-api:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send POST Request to Render
+        env:
+          RENDER_API_URL: ${{ secrets.RENDER_API_URL }}
+        run: |
+          curl -X POST $RENDER_API_URL \
+          -H "Content-Type: application/json" \
+          -d '{
+            "mediaType": "movie",
+            "startId": 4001,
+            "endId": 10000,
+            "delayMs": 1000
+          }'
