@@ -45,7 +45,7 @@ const recommendSimilarMedia = async (req, res, next) => {
     console.log('Formatted metadata:', formattedMetadata);
 
     try {
-      const recommenderResponse = await apiCore.post('/content-based/v1/similar', formattedMetadata);
+      const recommenderResponse = await apiCore.post('/content-based/v2/similar', formattedMetadata);
 
       if (!recommenderResponse || recommenderResponse.status !== 200) {
         throw new Error('Failed to fetch recommendations from the service');
