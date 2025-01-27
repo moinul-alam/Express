@@ -1,0 +1,38 @@
+name: Trigger Fetch Job
+
+on:
+  workflow_dispatch:
+    inputs:
+      mediaType:
+        description: "Type of media (e.g., movie, tv)"
+        required: true
+        default: "movie"
+      startId:
+        description: "Start ID for fetching"
+        required: true
+        default: 4001
+      endId:
+        description: "End ID for fetching"
+        required: true
+        default: 5000
+      delayMs:
+        description: "Delay in milliseconds"
+        required: true
+        default: 3000
+
+jobs:
+  trigger-api:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send POST Request to Render
+        env:
+          RENDER_API_URL: ${{ secrets.RENDER_API_URL }}
+        run: |
+          curl -X POST $RENDER_API_URL \
+          -H "Content-Type: application/json" \
+          -d "{
+            \"mediaType\": \"${{ github.event.inputs.mediaType }}\",
+            \"startId\": ${{ github.event.inputs.startId }},
+            \"endId\": ${{ github.event.inputs.endId }},
+            \"delayMs\": ${{ github.event.inputs.delayMs }}
+          }"
