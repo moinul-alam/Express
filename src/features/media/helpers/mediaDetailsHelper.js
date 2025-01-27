@@ -43,7 +43,7 @@ const formatCredits = (mediaType, creditDetails, mediaDetails) => {
     return [...topCrew, ...topCast];
   };
   
-  const formatMediaData = (mediaType, mediaDetails, trailerKey, credits) => {
+  const formatMediaData = (mediaType, mediaDetails, trailerKey, credits, keywords) => {
     return {
       tmdb_id: parseInt(mediaDetails.data.id, 10),
       media_type: mediaType,
@@ -73,6 +73,7 @@ const formatCredits = (mediaType, creditDetails, mediaDetails) => {
       adult: mediaDetails.data.adult,
       credits,
       trailer_id: trailerKey,
+      keywords,
       seasons: mediaType === 'tv' ? mediaDetails.data.number_of_seasons : undefined,
       episodes: mediaType === 'tv' ? mediaDetails.data.number_of_episodes : undefined,
       runtime: mediaType === 'movie' ? mediaDetails.data.runtime : undefined,

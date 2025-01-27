@@ -1,12 +1,15 @@
 const express = require('express');
 
 const { 
+  fetchAndSaveMediaInLoop,
   searchAll, searchMedia, fetchMediaCategory,
   fetchMediaDetails, fetchSimilarMedia, fetchMediaRecommendations,
   fetchPersonDetails, mediaDiscovery, fetchGenreList
 } = require('@src/features/media/controllers');
 
 const router = express.Router();
+
+router.post('/fetchAndSaveMedia', fetchAndSaveMediaInLoop);
 
 router.get('/searchAll', searchAll);
 router.get('/searchMedia', searchMedia);

@@ -1,3 +1,5 @@
+const fetchAndSaveMediaInLoop = require ('@src/features/media/controllers/fetchAndSaveMediaInLoop');
+
 const fetchMediaCategory = require ('@src/features/media/controllers/fetchMediaCategory');
 const fetchMediaDetails = require ('@src/features/media/controllers/fetchMediaDetails');
 const fetchPersonDetails = require ('@src/features/media/controllers/fetchPersonDetails');
@@ -11,6 +13,7 @@ const searchMedia = require ('@src/features/media/controllers/searchMedia');
 const mediaDiscovery = require ('@src/features/media/controllers/mediaDiscovery');
 
 module.exports = {
+  fetchAndSaveMediaInLoop,
   fetchMediaCategory, fetchMediaDetails, fetchPersonDetails,
   fetchGenreList, fetchSimilarMedia, fetchMediaRecommendations,
   searchAll, searchMedia, mediaDiscovery

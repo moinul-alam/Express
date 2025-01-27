@@ -137,10 +137,15 @@ const mediaSchema = new mongoose.Schema(
       trim: true,
       default: null,
     },
+    keywords: [
+      {
+        id: { type: Number, default: null },
+        name: { type: String, default: null },
+      },
+    ],
   },
   { timestamps: true }
 );
-
 
 const Media = mongoose.model('Media', mediaSchema);
 

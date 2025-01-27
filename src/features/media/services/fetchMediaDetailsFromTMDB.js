@@ -1,13 +1,14 @@
 const api = require('@src/utils/api');
 
 const fetchMediaDetailsFromTMDB = async (mediaType, id) => {
-  const [mediaDetails, trailerDetails, creditDetails] = await Promise.all([
+  const [mediaDetails, trailerDetails, creditDetails, keywordDetails] = await Promise.all([
     api.get(`/${mediaType}/${id}`),
     api.get(`/${mediaType}/${id}/videos`),
     api.get(`/${mediaType}/${id}/credits`),
+    api.get(`/${mediaType}/${id}/keywords`),
   ]);
 
-  return { mediaDetails, trailerDetails, creditDetails };
+  return { mediaDetails, trailerDetails, creditDetails, keywordDetails };
 };
 
-module.exports = fetchMediaDetailsFromTMDB ;
+module.exports = fetchMediaDetailsFromTMDB;

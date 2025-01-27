@@ -30,13 +30,20 @@ const fetchMediaDetails = async (req, res, next) => {
       }
     }
 
-    const { mediaDetails, trailerDetails, creditDetails } = await fetchMediaDetailsFromTMDB(mediaType, parsedId);
+    const { mediaDetails, trailerDetails, creditDetails, keywordDetails } = await fetchMediaDetailsFromTMDB(mediaType, parsedId);
     const officialTrailer = trailerDetails.data.results.find(
       (video) => video.type === 'Trailer' && video.official === true
     );
     const trailerKey = officialTrailer ? officialTrailer.key : null;
     const credits = formatCredits(mediaType, creditDetails, mediaDetails);
-    const data = formatMediaData(mediaType, mediaDetails, trailerKey, credits);
+
+    // Extract and format keywords
+    const keywords = keywordDetails.data.keywords.map((keyword) => ({
+      id: keyword.id,
+      name: keyword.name,
+    }));
+
+    const data = formatMediaData(mediaType, mediaDetails, trailerKey, credits, keywords);
 
     if (SAVE_TO_DB) {
       if (existingMedia) {
