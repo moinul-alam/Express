@@ -16,7 +16,7 @@ const personSchema = new Schema({
     default: '',
   },
   profile_path: {
-    type: String, // Path for the person's image
+    type: String,
     default: '',
   },
   biography: {
