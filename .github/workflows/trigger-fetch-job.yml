@@ -10,15 +10,15 @@ on:
       startId:
         description: "Start ID for fetching"
         required: true
-        default: 4001
+        default: 31000
       endId:
         description: "End ID for fetching"
         required: true
-        default: 5000
+        default: 50000
       delayMs:
         description: "Delay in milliseconds"
         required: true
-        default: 3000
+        default: 2000
 
 jobs:
   trigger-api:
