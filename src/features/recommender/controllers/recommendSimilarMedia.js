@@ -20,13 +20,13 @@ const recommendSimilarMedia = async (req, res, next) => {
     const formattedMetadata = {
       tmdb_Id: parseInt(metadata.tmdb_id, 10),
       metadata: {
-        title: metadata.title || '',
         media_type: metadata.media_type,
+        title: metadata.title || '',
         overview: metadata.overview || '',
+        vote_average: metadata.vote_average || '',
         release_year: metadata.release_date
           ? new Date(metadata.release_date).getFullYear().toString()
           : '',
-        tagline: metadata.tagline || '',
         genres: metadata.genres ? metadata.genres.map((genre) => genre.name) : [],
         director: metadata.credits
           ? metadata.credits
