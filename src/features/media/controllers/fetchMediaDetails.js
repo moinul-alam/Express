@@ -16,7 +16,7 @@ const fetchMediaDetails = async (req, res, next) => {
   }
 
   try {
-    const existingMedia = await Media.findOne({ tmdb_id: parsedId });
+    const existingMedia = await Media.findOne({ tmdb_id: parsedId, media_type: mediaType });
 
     if (existingMedia) {
       const isOutdated = new Date() - new Date(existingMedia.updatedAt) > 7 * 24 * 60 * 60 * 1000;

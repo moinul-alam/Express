@@ -19,7 +19,7 @@ const fetchAndSaveMediaInLoop = async (req, res, next) => {
     for (let id = startId; id <= endId; id++) {
       try {
         // Check if media already exists in the database
-        const existingMedia = await Media.findOne({ tmdb_id: id });
+        const existingMedia = await Media.findOne({ tmdb_id: id, media_type: mediaType });
         if (existingMedia) {
           console.log(`-----------------------------------------<  SKIPPING  >----- ${mediaType} with ID ${id} already exists in the database.`);
           continue;
