@@ -73,7 +73,7 @@ const formatCredits = (mediaType, creditDetails, mediaDetails) => {
       adult: mediaDetails.data.adult,
       credits,
       trailer_id: trailerKey,
-      keywords,
+      keywords:keywords,
       seasons: mediaType === 'tv' ? mediaDetails.data.number_of_seasons : undefined,
       episodes: mediaType === 'tv' ? mediaDetails.data.number_of_episodes : undefined,
       runtime: mediaType === 'movie' ? mediaDetails.data.runtime : undefined,

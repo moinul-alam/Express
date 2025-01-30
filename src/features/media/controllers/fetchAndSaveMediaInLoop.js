@@ -21,7 +21,8 @@ const fetchAndSaveMediaInLoop = async (req, res, next) => {
         // Check if media already exists in the database
         const existingMedia = await Media.findOne({ tmdb_id: id, media_type: mediaType });
         if (existingMedia) {
-          console.log(`-----------------------------------------<  SKIPPING  >----- ${mediaType} with ID ${id} already exists in the database.`);
+          // console.log(`-----------------------------------------<  SKIPPING  >----- ${mediaType} with ID ${id} already exists in the database.`);
+          console.log(`                                                                            < SKIPPING | ${mediaType} | ID: ${id} >---`);
           continue;
         }
 
@@ -48,12 +49,14 @@ const fetchAndSaveMediaInLoop = async (req, res, next) => {
 
         // Save data to the database
         await saveDataToDB(Media, { ...data, data_status: 'Complete' });
-        console.log(`-----<  SUCCESS  >------------------------------------------ ${mediaType} with ID ${id} fetched and saved successfully.`);
+        // console.log(`---<  SUCCESSFUL   | ${mediaType} | ${id} >------------------------------------------ `);
+        console.log(`---<  SUCCESSFUL | ${mediaType} | ID: ${id} >`);
                      
         // Delay between requests
         await delay(delayMs);
       } catch (error) {
-        console.error(`--------------------<  NOT FOUND  >----------------------- ${mediaType} with ID ${id}:`, error.message);
+        // console.error(`--------------------<  NOT FOUND  >----------------------- ${mediaType} with ID ${id}:`, error.message);
+        console.error(`                                        X  NOT FOUND | ${mediaType} | ID: ${id} X`);
         // Continue with the next iteration even if one fails
         continue;
       }

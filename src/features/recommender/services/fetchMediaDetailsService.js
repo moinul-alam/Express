@@ -11,7 +11,7 @@ const fetchMediaDetailsService = async (mediaType, mediaId) => {
 
   try {
     // Check if media exists in the database
-    const existingMedia = await Media.findOne({ tmdb_id: parsedId });
+    const existingMedia = await Media.findOne({ tmdb_id: parsedId, media_type: mediaType });
     if (existingMedia) {
       return { status: 'success', data: existingMedia };
     }

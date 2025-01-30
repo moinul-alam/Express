@@ -18,12 +18,13 @@ const recommendSimilarMedia = async (req, res, next) => {
 
     // Transform the metadata into the expected format
     const formattedMetadata = {
-      tmdbId: metadata.tmdb_id,
+      tmdb_Id: parseInt(metadata.tmdb_id, 10),
       metadata: {
         title: metadata.title || '',
+        media_type: metadata.media_type,
         overview: metadata.overview || '',
-        release_date: metadata.release_date
-          ? new Date(metadata.release_date).toISOString().split('T')[0]
+        release_year: metadata.release_date
+          ? new Date(metadata.release_date).getFullYear().toString()
           : '',
         tagline: metadata.tagline || '',
         genres: metadata.genres ? metadata.genres.map((genre) => genre.name) : [],
@@ -37,12 +38,11 @@ const recommendSimilarMedia = async (req, res, next) => {
               .filter((credit) => credit.type === 'cast')
               .map((castMember) => castMember.name)
           : [],
+        keywords: metadata.keywords ? metadata.keywords.map((keyword) => keyword.name) : [],
       },
-    };
+    };    
 
-    console.log('Formatted metadata:', formattedMetadata);
-
-    console.log('Formatted metadata:', formattedMetadata);
+    console.log(formattedMetadata);
 
     try {
       const recommenderResponse = await apiCore.post('/content-based/v2/similar', formattedMetadata);
