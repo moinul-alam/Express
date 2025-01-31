@@ -18,12 +18,12 @@ const recommendSimilarMedia = async (req, res, next) => {
 
     // Transform the metadata into the expected format
     const formattedMetadata = {
-      tmdb_Id: parseInt(metadata.tmdb_id, 10),
+      tmdb_id: parseInt(metadata.tmdb_id, 10),
       metadata: {
         media_type: metadata.media_type,
         title: metadata.title || '',
         overview: metadata.overview || '',
-        vote_average: metadata.vote_average || '',
+        vote_average: typeof metadata.vote_average === 'number' ? metadata.vote_average : 0,
         release_year: metadata.release_date
           ? new Date(metadata.release_date).getFullYear().toString()
           : '',
@@ -56,11 +56,12 @@ const recommendSimilarMedia = async (req, res, next) => {
       // Fetch details of each similar media item
       const mediaDetailsPromises = similarMediaList.map(async (similarMedia) => {
         try {
-          const mediaDetails = await api.get(`/${mediaType}/${similarMedia.tmdbId}`);
+          const tmdbId = similarMedia.tmdb_id;
+          const mediaDetails = await api.get(`/${mediaType}/${tmdbId}`);
           return mediaDetails.data;
         } catch (error) {
-          console.error(`Failed to fetch details for TMDB ID ${similarMedia.tmdbId}:`, error.message);
-          return { tmdbId: similarMedia.tmdbId, error: 'Failed to fetch media details' };
+          console.error(`Failed to fetch details for TMDB ID ${tmdbId}:`, error.message);
+          return { tmdbId, error: 'Failed to fetch media details' };
         }
       });
 
