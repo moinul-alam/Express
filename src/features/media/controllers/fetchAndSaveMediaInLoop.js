@@ -42,7 +42,7 @@ const fetchAndSaveMedia = async (mediaType, id) => {
   try {
     const existingMedia = await Media.findOne({ tmdb_id: id, media_type: mediaType });
     if (existingMedia) {
-      console.log(`                                                                            < SKIPPING | ${mediaType} | ID: ${id} >---`);
+      console.log(`- | ${mediaType} | ID: ${id}                 | SKIPPING | -`);
       return;
     }
 
@@ -66,9 +66,9 @@ const fetchAndSaveMedia = async (mediaType, id) => {
     const data = formatMediaData(mediaType, mediaDetails, trailerKey, credits, keywords);
     await saveDataToDB(Media, { ...data, data_status: 'Complete' });
 
-    console.log(`---<  SUCCESSFUL | ${mediaType} | ID: ${id} >`);
+    console.log(`+ | ${mediaType} | ID: ${id} | SUCCESSFUL |`);
   } catch (error) {
-    console.error(`                                        X  NOT FOUND | ${mediaType} | ID: ${id} X`);
+    console.error(`X | ${mediaType} | ID: ${id}                                | NOT FOUND |X`);
   }
 };
 
