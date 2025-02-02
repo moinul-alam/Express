@@ -68,7 +68,7 @@ const fetchAndSaveMedia = async (mediaType, id) => {
 
     console.log(`+ | ${mediaType} | ID: ${id} | SUCCESSFUL |`);
   } catch (error) {
-    console.error(`X | ${mediaType} | ID: ${id}                                | NOT FOUND |X`);
+    console.error(`  | ${mediaType} | ID: ${id}                               X| NOT FOUND |X`);
   }
 };
 
