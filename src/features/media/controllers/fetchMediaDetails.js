@@ -30,35 +30,70 @@ const fetchMediaDetails = async (req, res, next) => {
       }
     }
 
-    const { mediaDetails, trailerDetails, creditDetails, keywordDetails } = await fetchMediaDetailsFromTMDB(mediaType, parsedId);
-    const officialTrailer = trailerDetails.data.results.find(
+    // Wrap TMDB API call in try-catch
+    let mediaDetails, trailerDetails, creditDetails, keywordDetails;
+    try {
+      const response = await fetchMediaDetailsFromTMDB(mediaType, parsedId);
+      mediaDetails = response.mediaDetails;
+      trailerDetails = response.trailerDetails;
+      creditDetails = response.creditDetails;
+      keywordDetails = response.keywordDetails;
+    } catch (error) {
+      return errorResponse(res, 'Error fetching media details from TMDB', 500, error.message);
+    }
+
+    // Handle missing or malformed data from TMDB API
+    if (!mediaDetails || !trailerDetails || !creditDetails || !keywordDetails) {
+      return errorResponse(res, 'Incomplete data received from TMDB', 500, 'Some data fields are missing.');
+    }
+
+    // Safely extract trailer
+    const officialTrailer = (trailerDetails.data.results || []).find(
       (video) => video.type === 'Trailer' && video.official === true
     );
     const trailerKey = officialTrailer ? officialTrailer.key : null;
-    const credits = formatCredits(mediaType, creditDetails, mediaDetails);
 
-    // Extract and format keywords
-    const keywords = keywordDetails.data.keywords.map((keyword) => ({
+    // Safely format credits
+    let credits;
+    try {
+      credits = formatCredits(mediaType, creditDetails, mediaDetails);
+    } catch (error) {
+      return errorResponse(res, 'Error formatting credits', 500, error.message);
+    }
+
+    // Safely extract and format keywords
+    const keywords = (keywordDetails.data.keywords || []).map((keyword) => ({
       id: keyword.id,
       name: keyword.name,
     }));
 
-    const data = formatMediaData(mediaType, mediaDetails, trailerKey, credits, keywords);
+    // Safely format media data
+    let data;
+    try {
+      data = formatMediaData(mediaType, mediaDetails, trailerKey, credits, keywords);
+    } catch (error) {
+      return errorResponse(res, 'Error formatting media data', 500, error.message);
+    }
 
+    // Save data to DB with error handling
     if (SAVE_TO_DB) {
-      if (existingMedia) {
-        await Media.findByIdAndUpdate(existingMedia._id, { ...data, data_status: 'Complete' }, { new: true });
-        console.log('Existing media data updated with fresh data and status set to Complete.');
-      } else {
-        await saveDataToDB(Media, { ...data, data_status: 'Complete' });
-        console.log('New data saved to DB with status Complete.');
+      try {
+        if (existingMedia) {
+          await Media.findByIdAndUpdate(existingMedia._id, { ...data, data_status: 'Complete' }, { new: true });
+          console.log('Existing media data updated with fresh data and status set to Complete.');
+        } else {
+          await saveDataToDB(Media, { ...data, data_status: 'Complete' });
+          console.log('New data saved to DB with status Complete.');
+        }
+      } catch (error) {
+        return errorResponse(res, 'Error saving media data to DB', 500, error.message);
       }
     }
 
     return successResponse(res, 'Media details fetched successfully', data);
   } catch (error) {
-    console.error('Error fetching or saving media details:', error);
-    return errorResponse(res, 'Error fetching or saving media details', 500, error.message);
+    console.error('Error in fetchMediaDetails:', error);
+    return errorResponse(res, 'Error fetching media details', 500, error.message);
   }
 };
 
