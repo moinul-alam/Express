@@ -4,50 +4,36 @@ const cookieParser = require('cookie-parser');
 
 module.exports = (app) => {
   const allowedOrigins = [
-    'https://explora-core.vercel.app',
-    'http://localhost:5173',
+    'https://explora-core.vercel.app', // Frontend on Vercel
+    'http://localhost:5173',          // For local development
   ];
 
-  app.use(cookieParser());
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
+  app.use(cookieParser()); // Parse cookies
+  app.use(express.json()); // Parse JSON payloads
+  app.use(express.urlencoded({ extended: true })); // Parse URL-encoded data
 
   app.use(
     cors({
       origin: (origin, callback) => {
         if (!origin || allowedOrigins.includes(origin)) {
-          callback(null, true);
+          callback(null, true); // Allow the request
         } else {
-          callback(new Error('Not allowed by CORS'));
+          callback(new Error('Not allowed by CORS')); // Reject request
         }
       },
-      credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
-      exposedHeaders: ['set-cookie'],
+      credentials: true, // Allow cookies and credentials
     })
   );
 
-  // Add security headers
+  // Add custom headers to accommodate cookies
   app.use((req, res, next) => {
-    res.set({
-      'Access-Control-Allow-Credentials': 'true',
-      'Access-Control-Allow-Origin': req.headers.origin,
-    });
+    res.header('Access-Control-Allow-Credentials', 'true'); // Enable credentials (cookies)
+    res.header('Access-Control-Allow-Origin', req.headers.origin || 'https://explora-core.vercel.app'); // Dynamically set allowed origin
+    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS'); // Allowed HTTP methods
+    res.header(
+      'Access-Control-Allow-Headers',
+      'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+    ); // Allowed headers
     next();
   });
 };
-
-
-
-  // Add custom headers to accommodate cookies
-  // app.use((req, res, next) => {
-  //   res.header('Access-Control-Allow-Credentials', 'true'); // Enable credentials (cookies)
-  //   res.header('Access-Control-Allow-Origin', req.headers.origin || 'https://explora-core.vercel.app'); // Dynamically set allowed origin
-  //   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS'); // Allowed HTTP methods
-  //   res.header(
-  //     'Access-Control-Allow-Headers',
-  //     'Origin, X-Requested-With, Content-Type, Accept, Authorization'
-  //   ); // Allowed headers
-  //   next();
-  // });
