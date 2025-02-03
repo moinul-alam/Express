@@ -16,7 +16,7 @@ const setTokenCookie = (res, token) => {
         httpOnly: true,
         secure: true, // Ensure cookies are only sent over HTTPS
         sameSite: 'none', // Required for cross-site cookies
-        domain: '.vercel.app', // Set the domain to match the frontend
+        domain: 'express-core.onrender.com',
         maxAge: 60 * 60 * 1000, // 1 hour in milliseconds
         path: '/', // Cookie accessible site-wide
     });
@@ -28,7 +28,7 @@ const clearTokenCookie = (res) => {
         httpOnly: true, 
         secure: true,
         sameSite: 'none',
-        domain: '.vercel.app', // Set the domain to match the frontend
+        domain: 'express-core.onrender.com', 
     });
 };
 
