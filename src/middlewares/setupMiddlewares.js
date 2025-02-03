@@ -26,14 +26,14 @@ module.exports = (app) => {
   );
 
   // Add custom headers to accommodate cookies
-  app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Credentials', 'true'); // Enable credentials (cookies)
-    res.header('Access-Control-Allow-Origin', req.headers.origin || 'https://explora-core.vercel.app'); // Dynamically set allowed origin
-    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS'); // Allowed HTTP methods
-    res.header(
-      'Access-Control-Allow-Headers',
-      'Origin, X-Requested-With, Content-Type, Accept, Authorization'
-    ); // Allowed headers
-    next();
-  });
+  // app.use((req, res, next) => {
+  //   res.header('Access-Control-Allow-Credentials', 'true'); // Enable credentials (cookies)
+  //   res.header('Access-Control-Allow-Origin', req.headers.origin || 'https://explora-core.vercel.app'); // Dynamically set allowed origin
+  //   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS'); // Allowed HTTP methods
+  //   res.header(
+  //     'Access-Control-Allow-Headers',
+  //     'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+  //   ); // Allowed headers
+  //   next();
+  // });
 };
