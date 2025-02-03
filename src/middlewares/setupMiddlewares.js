@@ -4,26 +4,41 @@ const cookieParser = require('cookie-parser');
 
 module.exports = (app) => {
   const allowedOrigins = [
-    'https://explora-core.vercel.app', // Frontend on Vercel
-    'http://localhost:5173',          // For local development
+    'https://explora-core.vercel.app',
+    'http://localhost:5173',
   ];
 
-  app.use(cookieParser()); // Parse cookies
-  app.use(express.json()); // Parse JSON payloads
-  app.use(express.urlencoded({ extended: true })); // Parse URL-encoded data
+  app.use(cookieParser());
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
 
   app.use(
     cors({
       origin: (origin, callback) => {
         if (!origin || allowedOrigins.includes(origin)) {
-          callback(null, true); // Allow the request
+          callback(null, true);
         } else {
-          callback(new Error('Not allowed by CORS')); // Reject request
+          callback(new Error('Not allowed by CORS'));
         }
       },
-      credentials: true, // Allow cookies and credentials
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      exposedHeaders: ['set-cookie'],
     })
   );
+
+  // Add security headers
+  app.use((req, res, next) => {
+    res.set({
+      'Access-Control-Allow-Credentials': 'true',
+      'Access-Control-Allow-Origin': req.headers.origin,
+    });
+    next();
+  });
+};
+
+
 
   // Add custom headers to accommodate cookies
   // app.use((req, res, next) => {
@@ -36,4 +51,3 @@ module.exports = (app) => {
   //   ); // Allowed headers
   //   next();
   // });
-};
