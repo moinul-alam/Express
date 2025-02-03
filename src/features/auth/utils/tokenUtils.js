@@ -13,21 +13,22 @@ const generateToken = (userID) => {
 // Set secure cookie
 const setTokenCookie = (res, token) => {
     res.cookie('jwt', token, {
-        httpOnly: true,        // Prevents client-side access
-        secure: true,          // Works over HTTPS only
-        sameSite: 'none',      // Required for cross-site cookies
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production', // Ensure cookies are only sent over HTTPS
+        sameSite: 'none', // Required for cross-site cookies
+        domain: '.vercel.app', // Set the domain to match the frontend
         maxAge: 60 * 60 * 1000, // 1 hour in milliseconds
-        path: '/',             // Cookie accessible site-wide
+        path: '/', // Cookie accessible site-wide
     });
 };
-
 
 // Clear cookie for logout
 const clearTokenCookie = (res) => {
     res.clearCookie('jwt', { 
         httpOnly: true, 
-        secure: true, //process.env.NODE_ENV === 'production'
+        secure: process.env.NODE_ENV === 'production',
         sameSite: 'none',
+        domain: '.vercel.app', // Set the domain to match the frontend
     });
 };
 
