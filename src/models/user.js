@@ -38,15 +38,7 @@ const userSchema = new mongoose.Schema(
       favoriteDirectors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Person'}],
       watchlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Media' }],
     },
-    reviews: [
-      {
-        mediaType: { type: String, required: true, enum: ['movie', 'tv'] },
-        mediaID: { type: mongoose.Schema.Types.ObjectId, ref: 'Media', required: true },
-        rating: { type: Number, min: 1, max: 10 },
-        comment: { type: String, trim: true, maxlength: 500 },
-        reviewedAt: { type: Date, default: Date.now },
-      },
-    ],
+    reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: "review" }],
     behaviour: {
       searchHistory: [{ query: { type: String, trim: true }, searchedAt: { type: Date, default: Date.now } }],
       clickHistory: [

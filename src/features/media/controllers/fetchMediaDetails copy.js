@@ -1,5 +1,4 @@
 const Media = require('@src/models/media');
-const Review = require('@src/models/review');
 const fetchMediaDetailsFromTMDB = require('@src/features/media/services/fetchMediaDetailsFromTMDB');
 const { formatCredits, formatMediaData } = require('@src/features/media/helpers/mediaDetailsHelper');
 const saveDataToDB = require('@src/features/media/services/saveDataToDB');
@@ -10,6 +9,7 @@ const SAVE_TO_DB = true;
 const fetchMediaDetails = async (req, res, next) => {
   const { mediaType, id } = req.params;
 
+  // Check if id is a valid number
   const parsedId = parseInt(id, 10);
   if (isNaN(parsedId)) {
     return errorResponse(res, 'Invalid media ID', 400);
@@ -22,24 +22,15 @@ const fetchMediaDetails = async (req, res, next) => {
       const isOutdated = new Date() - new Date(existingMedia.updatedAt) > 7 * 24 * 60 * 60 * 1000;
 
       if (existingMedia.data_status === 'Complete' && !isOutdated) {
-        const reviews = await Review.find({ mediaId: existingMedia._id })
-          .populate('userId', 'info.firstName info.lastName')
-          .select('rating comment createdAt');
-
-        return successResponse(res, 'Media data is up-to-date', {
-          ...existingMedia.toObject(),
-          reviews,
-        });
+        return successResponse(res, 'Media data is up-to-date', existingMedia);
       }
 
-      console.log(
-        existingMedia.data_status === 'Partial'
-          ? 'Existing data is partial, replacing with new data.'
-          : 'Existing data is outdated, fetching fresh data.'
-      );
+      if (existingMedia.data_status === 'Partial' || isOutdated) {
+        console.log(isOutdated ? 'Existing data is outdated, fetching fresh data.' : 'Existing data is partial, replacing with new data.');
+      }
     }
 
-    // Fetch data from TMDB
+    // Wrap TMDB API call in try-catch
     let mediaDetails, trailerDetails, creditDetails, keywordDetails;
     try {
       const response = await fetchMediaDetailsFromTMDB(mediaType, parsedId);
@@ -51,18 +42,18 @@ const fetchMediaDetails = async (req, res, next) => {
       return errorResponse(res, 'Error fetching media details from TMDB', 500, error.message);
     }
 
-    // Validate TMDB data
+    // Handle missing or malformed data from TMDB API
     if (!mediaDetails || !trailerDetails || !creditDetails || !keywordDetails) {
       return errorResponse(res, 'Incomplete data received from TMDB', 500, 'Some data fields are missing.');
     }
 
-    // Extract trailer details
+    // Safely extract trailer
     const officialTrailer = (trailerDetails.data.results || []).find(
       (video) => video.type === 'Trailer' && video.official === true
     );
     const trailerKey = officialTrailer ? officialTrailer.key : null;
 
-    // Format credits
+    // Safely format credits
     let credits;
     try {
       credits = formatCredits(mediaType, creditDetails, mediaDetails);
@@ -70,13 +61,13 @@ const fetchMediaDetails = async (req, res, next) => {
       return errorResponse(res, 'Error formatting credits', 500, error.message);
     }
 
-    // Extract and format keywords
+    // Safely extract and format keywords
     const keywords = (keywordDetails.data.keywords || []).map((keyword) => ({
       id: keyword.id,
       name: keyword.name,
     }));
 
-    // Format media data
+    // Safely format media data
     let data;
     try {
       data = formatMediaData(mediaType, mediaDetails, trailerKey, credits, keywords);
@@ -84,15 +75,14 @@ const fetchMediaDetails = async (req, res, next) => {
       return errorResponse(res, 'Error formatting media data', 500, error.message);
     }
 
-    // Save or update media in the database
-    let updatedMedia;
+    // Save data to DB with error handling
     if (SAVE_TO_DB) {
       try {
         if (existingMedia) {
-          updatedMedia = await Media.findByIdAndUpdate(existingMedia._id, { ...data, data_status: 'Complete' }, { new: true });
+          await Media.findByIdAndUpdate(existingMedia._id, { ...data, data_status: 'Complete' }, { new: true });
           console.log('Existing media data updated with fresh data and status set to Complete.');
         } else {
-          updatedMedia = await saveDataToDB(Media, { ...data, data_status: 'Complete' });
+          await saveDataToDB(Media, { ...data, data_status: 'Complete' });
           console.log('New data saved to DB with status Complete.');
         }
       } catch (error) {
@@ -100,13 +90,7 @@ const fetchMediaDetails = async (req, res, next) => {
       }
     }
 
-    // Fetch reviews after media is saved/updated
-    const mediaId = updatedMedia ? updatedMedia._id : existingMedia._id;
-    const reviews = await Review.find({ mediaId: mediaId })
-      .populate('userId', 'username')
-      .select('rating comment createdAt');
-
-    return successResponse(res, 'Media details fetched successfully', { ...data, reviews });
+    return successResponse(res, 'Media details fetched successfully', data);
   } catch (error) {
     console.error('Error in fetchMediaDetails:', error);
     return errorResponse(res, 'Error fetching media details', 500, error.message);

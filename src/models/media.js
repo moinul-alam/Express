@@ -10,7 +10,7 @@ const mediaSchema = new mongoose.Schema(
     tmdb_id: {
       type: Number,
       required: [true, 'TMDB ID is required'],
-      unique: true,
+      unique: true
     },
     media_type: {
       type: String,
@@ -141,6 +141,12 @@ const mediaSchema = new mongoose.Schema(
       {
         id: { type: Number, default: null },
         name: { type: String, default: null },
+      },
+    ],
+    reviews: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'review',
       },
     ],
   },
