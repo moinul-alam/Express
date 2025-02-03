@@ -14,7 +14,7 @@ const generateToken = (userID) => {
 const setTokenCookie = (res, token) => {
     res.cookie('jwt', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production', // Ensure cookies are only sent over HTTPS
+        secure: true,
         sameSite: 'none', // Required for cross-site cookies
         domain: '.vercel.app', // Set the domain to match the frontend
         maxAge: 60 * 60 * 1000, // 1 hour in milliseconds
@@ -26,7 +26,7 @@ const setTokenCookie = (res, token) => {
 const clearTokenCookie = (res) => {
     res.clearCookie('jwt', { 
         httpOnly: true, 
-        secure: process.env.NODE_ENV === 'production',
+        secure: true,
         sameSite: 'none',
         domain: '.vercel.app', // Set the domain to match the frontend
     });
