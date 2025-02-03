@@ -14,11 +14,11 @@ const generateToken = (userID) => {
 const setTokenCookie = (res, token) => {
     res.cookie('jwt', token, {
         httpOnly: true,
-        secure: true, // Ensure cookies are only sent over HTTPS
-        sameSite: 'none', // Required for cross-site cookies
+        secure: true,
+        sameSite: 'none',
         domain: 'express-core.onrender.com',
-        maxAge: 60 * 60 * 1000, // 1 hour in milliseconds
-        path: '/', // Cookie accessible site-wide
+        maxAge: 60 * 60 * 1000,
+        path: '/',
     });
 };
 
@@ -32,7 +32,6 @@ const clearTokenCookie = (res) => {
     });
 };
 
-// Middleware to handle token generation errors consistently
 const handleTokenError = (req, res, next) => {
     try {
         next();
