@@ -23,6 +23,7 @@ const recommendSimilarMedia = async (req, res, next) => {
         media_type: metadata.media_type,
         title: metadata.title || '',
         overview: metadata.overview || '',
+        spoken_languages: metadata.spoken_languages? metadata.spoken_languages.map((language) => language.iso_639_1) : [],
         vote_average: typeof metadata.vote_average === 'number' ? metadata.vote_average : 0,
         release_year: metadata.release_date
           ? new Date(metadata.release_date).getFullYear().toString()
