@@ -48,6 +48,9 @@ const fetchMediaDetails = async (req, res, next) => {
       creditDetails = response.creditDetails;
       keywordDetails = response.keywordDetails;
     } catch (error) {
+      if (error.response && error.response.status === 404) {
+        return errorResponse(res, 'Media not found', 404);
+      }
       return errorResponse(res, 'Error fetching media details from TMDB', 500, error.message);
     }
 
