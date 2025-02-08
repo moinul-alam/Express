@@ -6,7 +6,7 @@ const discoverSimilarMedia = require('@src/features/recommender/controllers/disc
 const router = express.Router();
 
 router.get('/:mediaType/:mediaId/similar', recommendSimilarMedia);
-router.get('/:mediaType/:mediaId/discover', discoverSimilarMedia);
+router.post('/discover', discoverSimilarMedia);
 
 
 module.exports = router;
