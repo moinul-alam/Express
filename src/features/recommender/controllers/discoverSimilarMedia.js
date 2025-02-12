@@ -15,8 +15,7 @@ const discoverSimilarMedia = async (req, res, next) => {
       return errorResponse(res, 'Metadata is required', 400);
     }
 
-    // Extract mediaType and ensure it matches the expected format
-    const media_type = metadata.media_type || ''; // Changed from mediaType to media_type to match schema
+    const media_type = metadata.media_type || ''; 
 
     let {
       title = '',
@@ -100,7 +99,7 @@ const discoverSimilarMedia = async (req, res, next) => {
       }
     });
 
-    const mediaDetailsArray = (await Promise.all(mediaDetailsPromises)).filter(Boolean);
+    const mediaDetailsArray = (await Promise.all(mediaDetailsPromises));
 
     return successResponse(res, 'Similar media fetched successfully', mediaDetailsArray);
   } catch (error) {
