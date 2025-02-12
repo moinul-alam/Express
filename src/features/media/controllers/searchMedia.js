@@ -35,12 +35,17 @@ const searchMovieOrTv = async (req, res, next) => {
       (item) => item.media_type === 'movie' || item.media_type === 'tv'
     );
 
+    console.log('Search results:', results);
+
     // Map results to include only desired fields
     const formattedResults = results.map((item) => ({
       id: item.id,
       mediaType: item.media_type,
-      title: item.title || item.name,
+      title: item.title || item.name || '',
+      overview: item.overview || '',
       poster_path: item.poster_path,
+      release_date: item.release_date || item.first_air_date,
+      vote_average: item.vote_average || 0,
     }));
 
     return successResponse(res, 'Search completed successfully', formattedResults);
