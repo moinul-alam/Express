@@ -39,7 +39,6 @@ const fetchMediaDetails = async (req, res, next) => {
       );
     }
 
-    // Fetch data from TMDB
     let mediaDetails, trailerDetails, creditDetails, keywordDetails;
     try {
       const response = await fetchMediaDetailsFromTMDB(mediaType, parsedId);
@@ -54,18 +53,15 @@ const fetchMediaDetails = async (req, res, next) => {
       return errorResponse(res, 'Error fetching media details from TMDB', 500, error.message);
     }
 
-    // Validate TMDB data
     if (!mediaDetails || !trailerDetails || !creditDetails || !keywordDetails) {
       return errorResponse(res, 'Incomplete data received from TMDB', 500, 'Some data fields are missing.');
     }
 
-    // Extract trailer details
     const officialTrailer = (trailerDetails.data.results || []).find(
       (video) => video.type === 'Trailer' && video.official === true
     );
     const trailerKey = officialTrailer ? officialTrailer.key : null;
 
-    // Format credits
     let credits;
     try {
       credits = formatCredits(mediaType, creditDetails, mediaDetails);
@@ -73,13 +69,11 @@ const fetchMediaDetails = async (req, res, next) => {
       return errorResponse(res, 'Error formatting credits', 500, error.message);
     }
 
-    // Extract and format keywords
     const keywords = (keywordDetails.data.keywords || []).map((keyword) => ({
       id: keyword.id,
       name: keyword.name,
     }));
 
-    // Format media data
     let data;
     try {
       data = formatMediaData(mediaType, mediaDetails, trailerKey, credits, keywords);
@@ -87,7 +81,6 @@ const fetchMediaDetails = async (req, res, next) => {
       return errorResponse(res, 'Error formatting media data', 500, error.message);
     }
 
-    // Save or update media in the database
     let updatedMedia;
     if (SAVE_TO_DB) {
       try {
