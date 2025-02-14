@@ -1,4 +1,4 @@
-const api = require('@src/utils/api'); 
+const api = require('@src/utils/api');
 const apiCore = require('@src/utils/apiCore');
 const fetchMediaDetailsService = require('@src/features/recommender/services/fetchMediaDetailsService');
 const { successResponse, errorResponse } = require('@src/utils/responseFormatter');
@@ -9,16 +9,25 @@ const fetchRecommenderResponse = async (ratings) => {
     if (!response || response.status !== 200) {
       throw new Error('Failed to fetch recommendations from the service');
     }
-    return response.data.similarMedia;
+
+    // Check if response.data exists and contains the array
+    if (!response.data) {
+      throw new Error('Invalid response format from recommendation service');
+    }
+
+    // Since we can see the actual response format from your example,
+    // we can directly use it without assuming any nested structure
+    const tmdbIds = response.data.map(item => item.tmdb_id);
+    return tmdbIds;
   } catch (error) {
+    console.error('Error connecting to the recommendation service:', error.message);
     throw new Error('Error connecting to the recommendation service');
   }
 };
 
-const fetchMediaDetails = async (mediaType, similarMediaList) => {
-  const mediaDetailsPromises = similarMediaList.map(async (similarMedia) => {
+const fetchMediaDetails = async (mediaType, tmdbIdList) => {
+  const mediaDetailsPromises = tmdbIdList.map(async (tmdbId) => {
     try {
-      const tmdbId = similarMedia.tmdb_id;
       const mediaDetails = await api.get(`/${mediaType}/${tmdbId}`);
       return mediaDetails.data;
     } catch (error) {
@@ -29,13 +38,21 @@ const fetchMediaDetails = async (mediaType, similarMediaList) => {
   return await Promise.all(mediaDetailsPromises);
 };
 
-const recommendSimilarMedia = async (req, res, next) => {
+const recommendCollaborativeMedia = async (req, res, next) => {
   const { mediaType, ratings } = req.body;
 
   try {
-    console.log('Fetching media details for collaborative filtering: ', ratings);
-    const similarMediaList = await fetchRecommenderResponse(ratings);
-    const mediaDetailsArray = await fetchMediaDetails(mediaType, similarMediaList);
+    console.log('Fetching media details for collaborative filtering:', ratings);
+    const MediaList = await fetchRecommenderResponse(ratings);
+
+    console.log('MediaList:', MediaList);
+
+    if (!MediaList || MediaList.length === 0) {
+      console.log('No recommendations found for the given ratings.');
+      return successResponse(res, 'No recommendations found', []);
+    }
+
+    const mediaDetailsArray = await fetchMediaDetails(mediaType, MediaList);
     return successResponse(res, 'Similar media fetched successfully', mediaDetailsArray);
   } catch (error) {
     console.error('Error:', error.message);
@@ -43,4 +60,4 @@ const recommendSimilarMedia = async (req, res, next) => {
   }
 };
 
-module.exports = recommendSimilarMedia;
+module.exports = recommendCollaborativeMedia;
