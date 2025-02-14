@@ -17,16 +17,56 @@ const fetchMediaDetailsService = async (mediaType, mediaId) => {
     }
 
     // Fetch media details from TMDB
-    const { mediaDetails, creditDetails } = await fetchMediaDetailsFromTMDB(mediaType, parsedId);
+    let mediaDetails, trailerDetails, creditDetails, keywordDetails;
 
-    // Format media data
-    const credits = creditDetails ? formatCredits(mediaType, creditDetails, mediaDetails) : null;
-    const data = formatMediaData(mediaType, mediaDetails, credits);
+    try {
+      ({ mediaDetails, trailerDetails, creditDetails, keywordDetails } = 
+        await fetchMediaDetailsFromTMDB(mediaType, parsedId));
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
+        return { status: 'not_found', message: 'Media not found on TMDB' };
+      }
+      console.error('Error fetching data from TMDB:', error.message);
+      throw new Error('Failed to fetch media details');
+    }
+
+    // Ensure all necessary details exist
+    if (!mediaDetails || !trailerDetails || !creditDetails || !keywordDetails) {
+      return { status: 'error', message: 'Incomplete data received from TMDB' };
+    }
+
+    // Extract official trailer key
+    const officialTrailer = (trailerDetails.data.results || []).find(
+      (video) => video.type === 'Trailer' && video.official === true
+    );
+    const trailerKey = officialTrailer ? officialTrailer.key : null;
+
+    // Format credits
+    let credits = {};
+    try {
+      credits = formatCredits(mediaType, creditDetails, mediaDetails);
+    } catch (error) {
+      console.error(`Error formatting credits: ${error.message}`);
+    }
+
+    // Extract keywords
+    const keywords = (keywordDetails.data.keywords || keywordDetails.data.results || []).map((keyword) => ({
+      id: keyword.id,
+      name: keyword.name,
+    }));
+
+    // Format final media data
+    let data = {};
+    try {
+      data = formatMediaData(mediaType, mediaDetails, trailerKey, credits, keywords);
+    } catch (error) {
+      console.error(`Error formatting media data: ${error.message}`);
+    }
 
     return { status: 'success', data };
   } catch (error) {
-    console.error('Error fetching media details:', error);
-    throw new Error('Error fetching media details');
+    console.error('Unexpected error fetching media details:', error);
+    return { status: 'error', message: 'An unexpected error occurred' };
   }
 };
 

@@ -35,8 +35,6 @@ const searchMovieOrTv = async (req, res, next) => {
       (item) => item.media_type === 'movie' || item.media_type === 'tv'
     );
 
-    console.log('Search results:', results);
-
     // Map results to include only desired fields
     const formattedResults = results.map((item) => ({
       id: item.id,

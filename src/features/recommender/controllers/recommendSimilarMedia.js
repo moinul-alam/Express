@@ -7,7 +7,6 @@ const recommendSimilarMedia = async (req, res, next) => {
   const { mediaType, mediaId } = req.params;
 
   try {
-    // Fetch media details for the given mediaId
     const result = await fetchMediaDetailsService(mediaType, mediaId);
 
     if (!result || result.status !== 'success') {
@@ -16,34 +15,29 @@ const recommendSimilarMedia = async (req, res, next) => {
 
     const metadata = result.data;
 
-    // Transform the metadata into the expected format
     const formattedMetadata = {
       tmdb_id: parseInt(metadata.tmdb_id, 10),
       metadata: {
         media_type: metadata.media_type,
         title: metadata.title || '',
         overview: metadata.overview || '',
-        spoken_languages: metadata.spoken_languages? metadata.spoken_languages.map((language) => language.iso_639_1) : [],
+        spoken_languages: metadata.spoken_languages ? metadata.spoken_languages.map(lang => lang.iso_639_1) : [],
         vote_average: typeof metadata.vote_average === 'number' ? metadata.vote_average : 0,
-        release_year: metadata.release_date
-          ? new Date(metadata.release_date).getFullYear().toString()
-          : '',
-        genres: metadata.genres ? metadata.genres.map((genre) => genre.name) : [],
+        release_year: metadata.release_date ? new Date(metadata.release_date).getFullYear().toString() : '',
+        genres: metadata.genres ? metadata.genres.map(genre => genre.name) : [],
         director: metadata.credits
           ? metadata.credits
-              .filter((credit) => credit.type === 'director')
-              .map((director) => director.name)
+              .filter(credit => credit.type === 'director' || credit.type === 'creator')
+              .map(director => director.name || creator.name)
           : [],
         cast: metadata.credits
-          ? metadata.credits
-              .filter((credit) => credit.type === 'cast')
-              .map((castMember) => castMember.name)
+          ? metadata.credits.filter(credit => credit.type === 'cast').map(cast => cast.name)
           : [],
-        keywords: metadata.keywords ? metadata.keywords.map((keyword) => keyword.name) : [],
+        keywords: metadata.keywords ? metadata.keywords.map(keyword => keyword.name) : [],
       },
-    };    
+    };
 
-    console.log(formattedMetadata);
+    console.log('Data structure: ', formattedMetadata);
 
     try {
       const recommenderResponse = await apiCore.post('/content-based/v2/similar', formattedMetadata);
@@ -58,16 +52,25 @@ const recommendSimilarMedia = async (req, res, next) => {
       const mediaDetailsPromises = similarMediaList.map(async (similarMedia) => {
         try {
           const tmdbId = similarMedia.tmdb_id;
-          const mediaDetails = await api.get(`/${mediaType}/${tmdbId}`);
+          const mediaDetails = await fetchMediaDetailsService(mediaType, tmdbId);
+
+          // Exclude media if it is not found or undefined
+          if (!mediaDetails || mediaDetails.status === 'not_found' || !mediaDetails.data) {
+            console.warn(`Skipping TMDB ID ${tmdbId} due to missing details.`);
+            return null;
+          }
+
           return mediaDetails.data;
         } catch (error) {
           console.error(`Failed to fetch details for TMDB ID ${tmdbId}:`, error.message);
-          return { tmdbId, error: 'Failed to fetch media details' };
+          return null;
         }
       });
 
-      const mediaDetailsArray = await Promise.all(mediaDetailsPromises);
+      let mediaDetailsArray = await Promise.all(mediaDetailsPromises);
+      mediaDetailsArray = mediaDetailsArray.filter(Boolean);
 
+      console.log('Backend5: Filtered Media Details Array: ', mediaDetailsArray);
       return successResponse(res, 'Similar media fetched successfully', mediaDetailsArray);
     } catch (recommenderError) {
       console.error('Error connecting to the recommender:', recommenderError.message);

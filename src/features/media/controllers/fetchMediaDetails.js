@@ -105,7 +105,7 @@ const fetchMediaDetails = async (req, res, next) => {
       return errorResponse(res, 'Error formatting credits', 500, error.message);
     }
 
-    const keywords = (keywordDetails.data.keywords || []).map((keyword) => ({
+    const keywords = (keywordDetails.data.keywords || keywordDetails.data.results || []).map((keyword) => ({
       id: keyword.id,
       name: keyword.name,
     }));
