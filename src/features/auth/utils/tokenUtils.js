@@ -12,24 +12,41 @@ const generateToken = (userID) => {
 
 // Set secure cookie
 const setTokenCookie = (res, token) => {
-    res.cookie('jwt', token, {
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    const cookieOptions = {
         httpOnly: true,
-        secure: true,
-        sameSite: 'none',
-        domain: 'express-core.onrender.com',
-        maxAge: 60 * 60 * 1000,
+        secure: isProduction, // Only set to true in production
+        sameSite: isProduction ? 'none' : 'strict', // Use 'none' in production, 'lax' in development
+        maxAge: 60 * 60 * 1000, // 1 hour
         path: '/',
-    });
+    };
+
+    // Set domain only in production
+    if (isProduction) {
+        cookieOptions.domain = 'express-core.onrender.com';
+    }
+
+    res.cookie('jwt', token, cookieOptions);
 };
 
 // Clear cookie for logout
 const clearTokenCookie = (res) => {
-    res.clearCookie('jwt', { 
-        httpOnly: true, 
-        secure: true,
-        sameSite: 'none',
-        domain: 'express-core.onrender.com', 
-    });
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    const cookieOptions = {
+        httpOnly: true,
+        secure: isProduction, // Only set to true in production
+        sameSite: isProduction ? 'none' : 'strict', // Use 'none' in production, 'lax' in development
+        path: '/',
+    };
+
+    // Set domain only in production
+    if (isProduction) {
+        cookieOptions.domain = 'express-core.onrender.com';
+    }
+
+    res.clearCookie('jwt', cookieOptions);
 };
 
 const handleTokenError = (req, res, next) => {
