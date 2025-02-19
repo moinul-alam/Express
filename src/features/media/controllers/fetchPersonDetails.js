@@ -29,7 +29,22 @@ const fetchPersonDetails = async (req, res, next) => {
       person.tv_credits.acting = resolvedActingTV;
       person.tv_credits.directing = resolvedDirectingTV;
 
-      return successResponse(res, 'Person details fetched successfully', person);
+      // Create a resolved person object for the response
+    const resolvedPerson = {
+      ...person.toObject(), // Convert Mongoose document to plain object
+      movie_credits: {
+        acting: resolvedActingMovies,
+        directing: resolvedDirectingMovies,
+      },
+      tv_credits: {
+        acting: resolvedActingTV,
+        directing: resolvedDirectingTV,
+      },
+    };
+
+    console.log('Person details found in DB. Resolving media data and returning...', resolvedPerson);
+
+    return successResponse(res, 'Person details saved successfully', resolvedPerson);
     }
 
     const { personDetails, movieCredits, tvCredits } = await fetchPersonDetailsFromTMDB(person_id);
