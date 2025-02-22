@@ -5,7 +5,7 @@ const { successResponse, errorResponse } = require('@src/utils/responseFormatter
 
 const fetchRecommenderResponse = async (ratings) => {
   try {
-    const response = await apiCore.post('/collaborative/v2/recommendations', ratings);
+    const response = await apiCore.post('/collaborative/v2/recommendations/user-based', ratings);
 
     if (!response || response.status !== 200) {
       throw new Error('Failed to fetch recommendations from the service');
