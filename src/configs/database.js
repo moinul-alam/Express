@@ -3,8 +3,10 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-if (!process.env.MONGODB_URI_LOCAL && !process.env.MONGODB_URI_CLOUD) {
-    console.error('MongoDB URIs are not defined in environment variables.');
+const { NODE_ENV, MONGODB_URI_LOCAL, MONGODB_URI_CLOUD } = process.env;
+
+if (!NODE_ENV || (!MONGODB_URI_LOCAL && !MONGODB_URI_CLOUD)) {
+    console.error('NODE_ENV or MongoDB URIs are not defined in environment variables.');
     process.exit(1);
 }
 
@@ -21,24 +23,25 @@ const connectDB = async () => {
         autoIndex: false,
     };
 
-    // Try connecting to LOCAL first
-    try {
-        logMessage('Attempting to connect to LOCAL MongoDB...');
-        await mongoose.connect(process.env.MONGODB_URI_LOCAL, options);
-        logMessage('MongoDB connected successfully to LOCAL instance.');
-        return; // Exit the function if connection is successful
-    } catch (localError) {
-        logError(localError);
-        logMessage('Failed to connect to LOCAL MongoDB. Trying CLOUD...');
+    let dbURI;
+
+    if (NODE_ENV === 'production') {
+        dbURI = MONGODB_URI_CLOUD;
+        logMessage('Running in PRODUCTION mode. Connecting to CLOUD MongoDB...');
+    } else if (NODE_ENV === 'development') {
+        dbURI = MONGODB_URI_LOCAL;
+        logMessage('Running in DEVELOPMENT mode. Connecting to LOCAL MongoDB...');
+    } else {
+        console.error('Invalid NODE_ENV value. Must be either "production" or "development".');
+        process.exit(1);
     }
 
-    // If LOCAL connection fails, try connecting to CLOUD
     try {
-        await mongoose.connect(process.env.MONGODB_URI_CLOUD, options);
-        logMessage('MongoDB connected successfully to CLOUD instance.');
-    } catch (cloudError) {
-        logError(cloudError);
-        console.error('Failed to connect to both LOCAL and CLOUD MongoDB instances.');
+        await mongoose.connect(dbURI, options);
+        logMessage(`MongoDB connected successfully to ${NODE_ENV === 'production' ? 'CLOUD' : 'LOCAL'} instance.`);
+    } catch (error) {
+        logError(error);
+        console.error(`Failed to connect to MongoDB in ${NODE_ENV} mode.`);
         process.exit(1);
     }
 };
