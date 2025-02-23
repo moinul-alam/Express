@@ -70,7 +70,7 @@ const recommendSimilarMedia = async (req, res, next) => {
       let mediaDetailsArray = await Promise.all(mediaDetailsPromises);
       mediaDetailsArray = mediaDetailsArray.filter(Boolean);
 
-      console.log('Backend5: Filtered Media Details Array: ', mediaDetailsArray);
+      console.log('Backend5: Filtered Media Details Array: ', mediaDetailsArray.length);
       return successResponse(res, 'Similar media fetched successfully', mediaDetailsArray);
     } catch (recommenderError) {
       console.error('Error connecting to the recommender:', recommenderError.message);
