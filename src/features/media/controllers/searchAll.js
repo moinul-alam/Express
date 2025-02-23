@@ -33,9 +33,12 @@ const searchMedia = async (req, res, next) => {
 
       return {
         id: item.id,
-        mediaType,
-        title: item.title || item.name,
-        poster_path: item.poster_path || item.profile_path,
+        mediaType: item.media_type,
+        title: item.title || item.name || '',
+        overview: item.overview || '',
+        poster_path: item.poster_path,
+        release_date: item.release_date || item.first_air_date,
+        vote_average: item.vote_average || 0
       };
     });
 

@@ -3,7 +3,7 @@ const apiCore = require('@src/utils/apiCore');
 const fetchMediaDetailsService = require('@src/features/recommender/services/fetchMediaDetailsService');
 const { successResponse, errorResponse } = require('@src/utils/responseFormatter');
 
-const recommendSimilarMedia = async (req, res, next) => {
+const recommenderContentSimilar = async (req, res, next) => {
   const { mediaType, mediaId } = req.params;
 
   try {
@@ -82,4 +82,4 @@ const recommendSimilarMedia = async (req, res, next) => {
   }
 };
 
-module.exports = recommendSimilarMedia;
+module.exports = recommenderContentSimilar;

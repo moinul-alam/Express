@@ -8,7 +8,7 @@ const generateTmdbId = () => {
   return Number(uuidNumeric.slice(0, 10)); // Ensure 10-digit tmdb_id
 };
 
-const discoverSimilarMedia = async (req, res, next) => {
+const recommenderContentDiscover = async (req, res, next) => {
   try {
     const { metadata } = req.body;
     if (!metadata) {
@@ -108,4 +108,4 @@ const discoverSimilarMedia = async (req, res, next) => {
   }
 };
 
-module.exports = discoverSimilarMedia;
+module.exports = recommenderContentDiscover;

@@ -19,7 +19,6 @@ const fetchRecommenderResponse = async (ratings) => {
   } catch (error) {
     console.error('Error connecting to the recommendation service:', error.message);
 
-    // Handle service down/unreachable cases explicitly
     if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND' || error.response?.status === 503) {
       throw new Error('Recommendation service is currently unavailable');
     }
@@ -35,26 +34,30 @@ const fetchMediaDetails = async (mediaType, tmdbIdList) => {
       return mediaDetails.data;
     } catch (error) {
       console.error(`Failed to fetch details for TMDB ID ${tmdbId}:`, error.message);
-      return { tmdbId, error: 'Failed to fetch media details' };
+      return null; // Skip failed fetches
     }
   });
-  return await Promise.all(mediaDetailsPromises);
+
+  const mediaDetailsArray = await Promise.all(mediaDetailsPromises);
+
+  // Filter out failed fetches (null values)
+  return mediaDetailsArray.filter(details => details !== null);
 };
 
-const recommendCollaborativeMedia = async (req, res, next) => {
+const recommenderCollabUser = async (req, res, next) => {
   const { mediaType, ratings } = req.body;
 
   try {
     console.log('Collaborative Filtering: TMDB ID and Ratings:', ratings);
     
-    const MediaList = await fetchRecommenderResponse(ratings);
+    const mediaList = await fetchRecommenderResponse(ratings);
 
-    if (!MediaList || MediaList.length === 0) {
+    if (!mediaList || mediaList.length === 0) {
       console.log('No recommendations found for the given ratings.');
       return errorResponse(res, 'No recommendations found', []);
     }
 
-    const mediaDetailsArray = await fetchMediaDetails(mediaType, MediaList);
+    const mediaDetailsArray = await fetchMediaDetails(mediaType, mediaList);
     return successResponse(res, 'Similar media fetched successfully', mediaDetailsArray);
   } catch (error) {
     console.error('Error:', error.message);
@@ -67,4 +70,4 @@ const recommendCollaborativeMedia = async (req, res, next) => {
   }
 };
 
-module.exports = recommendCollaborativeMedia;
+module.exports = recommenderCollabUser;

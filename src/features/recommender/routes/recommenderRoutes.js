@@ -1,14 +1,18 @@
 const express = require('express');
 
-const recommendCollaborativeMedia = require('@src/features/recommender/controllers/recommendCollaborativeMedia');
-const recommendSimilarMedia = require('@src/features/recommender/controllers/recommendSimilarMedia');
-const discoverSimilarMedia = require('@src/features/recommender/controllers/discoverSimilarMedia');
+const recommenderCollabUser = require('@src/features/recommender/controllers/recommenderCollabUser');
+const recommenderCollabItem = require('@src/features/recommender/controllers/recommenderCollabItem');
+
+const recommenderContentSimilar = require('@src/features/recommender/controllers/recommenderContentSimilar');
+const recommenderContentDiscover = require('@src/features/recommender/controllers/recommenderContentDiscover');
 
 const router = express.Router();
 
-router.post('/collaborative/recommendations', recommendCollaborativeMedia);
-router.get('/:mediaType/:mediaId/similar', recommendSimilarMedia);
-router.post('/discover', discoverSimilarMedia);
+router.post('/collaborative/user-based-recommendations', recommenderCollabUser);
+router.post('/collaborative/item-based-recommendations', recommenderCollabItem);
+
+router.get('/content-based/:mediaType/:mediaId/similar', recommenderContentSimilar);
+router.post('/content-based/discover', recommenderContentDiscover);
 
 
 module.exports = router;
