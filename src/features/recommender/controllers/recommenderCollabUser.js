@@ -45,7 +45,8 @@ const fetchMediaDetails = async (mediaType, tmdbIdList) => {
 };
 
 const recommenderCollabUser = async (req, res, next) => {
-  const { mediaType, ratings } = req.body;
+  // Set default mediaType to "movie" if not provided
+  const { mediaType = 'movie', ratings } = req.body;
 
   try {
     console.log('Collaborative Filtering: TMDB ID and Ratings:', ratings);
