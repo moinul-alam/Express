@@ -1,9 +1,10 @@
 const api = require('@src/utils/api');
+const Media = require('@src/models/media');
 const { successResponse, errorResponse } = require('@src/utils/responseFormatter');
 
 const searchMedia = async (req, res, next) => {
   const searchQuery = req.query.query;
-  const page = req.query.page || 1;
+  const page = parseInt(req.query.page) || 1;
 
   if (!searchQuery) {
     return errorResponse(res, 'Query parameter is required.', 400);
@@ -11,41 +12,36 @@ const searchMedia = async (req, res, next) => {
 
   try {
     const response = await api.get('/search/multi', {
-      params: {
-        query: searchQuery,
-        page: page,
-      },
+      params: { query: searchQuery, page: page },
     });
 
-    // Map results to include only the desired fields
-    const combinedResults = response.data.results.map((item) => {
-      let mediaType = '';
-
-      if (item.media_type === 'movie') {
-        mediaType = 'movie';
-      } else if (item.media_type === 'tv') {
-        mediaType = 'tv';
-      } else if (item.media_type === 'person') {
-        mediaType = 'person'; 
-      } else {
-        mediaType = 'other'; 
-      }
-
-      return {
-        id: item.id,
-        mediaType: item.media_type,
-        title: item.title || item.name || '',
-        overview: item.overview || '',
-        poster_path: item.poster_path,
-        release_date: item.release_date || item.first_air_date,
-        vote_average: item.vote_average || 0
-      };
-    });
+    // Extract required fields
+    const combinedResults = response.data.results.map((item) => ({
+      id: item.id,
+      mediaType: item.media_type,
+      title: item.title || item.name || '',
+      overview: item.overview || '',
+      poster_path: item.poster_path,
+      release_date: item.release_date || item.first_air_date,
+      vote_average: item.vote_average || 0,
+    }));
 
     return successResponse(res, 'Search completed successfully', combinedResults);
   } catch (error) {
-    console.error('Error during search:', error);
-    next(error);
+    console.error('TMDB API failed, attempting database search:', error);
+
+    try {
+      // Perform a case-insensitive search in MongoDB
+      const dbResults = await Media.find(
+        { title: { $regex: new RegExp(searchQuery, 'i') } },
+        { _id: 0, __v: 0 } // Exclude MongoDB-specific fields
+      ).limit(20);
+
+      return successResponse(res, 'Search completed using database', dbResults);
+    } catch (dbError) {
+      console.error('Database search failed:', dbError);
+      return errorResponse(res, 'Search failed due to an internal error.', 500);
+    }
   }
 };
 

@@ -12,7 +12,7 @@ const recommenderContentSimilar = async (req, res, next) => {
     if (!result || result.status !== 'success') {
       return errorResponse(res, 'Failed to fetch media details', 404);
     }
-
+    
     const metadata = result.data;
 
     const formattedMetadata = {
