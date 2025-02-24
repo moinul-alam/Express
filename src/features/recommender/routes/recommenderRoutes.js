@@ -6,6 +6,8 @@ const recommenderCollabItem = require('@src/features/recommender/controllers/rec
 const recommenderContentSimilar = require('@src/features/recommender/controllers/recommenderContentSimilar');
 const recommenderContentDiscover = require('@src/features/recommender/controllers/recommenderContentDiscover');
 
+const recommenderHybrid = require('@src/features/recommender/controllers/recommenderHybrid');
+
 const router = express.Router();
 
 router.post('/collaborative/user-based-recommendations', recommenderCollabUser);
@@ -13,6 +15,8 @@ router.post('/collaborative/item-based-recommendations', recommenderCollabItem);
 
 router.get('/content-based/:mediaType/:mediaId/similar', recommenderContentSimilar);
 router.post('/content-based/discover', recommenderContentDiscover);
+
+router.post('/hybrid', recommenderHybrid);
 
 
 module.exports = router;
