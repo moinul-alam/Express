@@ -4,7 +4,7 @@ const fetchMediaDetailsService = require('@src/features/recommender/services/fet
 const { successResponse, errorResponse } = require('@src/utils/responseFormatter');
 
 const recommenderContentSimilar = async (req, res, next) => {
-  const { mediaType, mediaId } = req.params;
+  const { mediaType = 'movie', mediaId } = req.params;
 
   try {
     const result = await fetchMediaDetailsService(mediaType, mediaId);
@@ -18,7 +18,7 @@ const recommenderContentSimilar = async (req, res, next) => {
     const formattedMetadata = {
       tmdb_id: parseInt(metadata.tmdb_id, 10),
       metadata: {
-        media_type: metadata.media_type,
+        media_type: metadata.media_type || mediaType,
         title: metadata.title || '',
         overview: metadata.overview || '',
         spoken_languages: metadata.spoken_languages ? metadata.spoken_languages.map(lang => lang.iso_639_1) : [],
@@ -28,7 +28,7 @@ const recommenderContentSimilar = async (req, res, next) => {
         director: metadata.credits
           ? metadata.credits
               .filter(credit => credit.type === 'director' || credit.type === 'creator')
-              .map(director => director.name || creator.name)
+              .map(director => director.name)
           : [],
         cast: metadata.credits
           ? metadata.credits.filter(credit => credit.type === 'cast').map(cast => cast.name)
@@ -36,8 +36,6 @@ const recommenderContentSimilar = async (req, res, next) => {
         keywords: metadata.keywords ? metadata.keywords.map(keyword => keyword.name) : [],
       },
     };
-
-    console.log('Data structure: ', formattedMetadata);
 
     try {
       const recommenderResponse = await apiCore.post('/content-based/v2/similar', formattedMetadata);
