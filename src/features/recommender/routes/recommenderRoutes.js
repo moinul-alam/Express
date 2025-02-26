@@ -9,7 +9,7 @@ const recommenderContentSimilar = require('@src/features/recommender/controllers
 const recommenderContentDiscover = require('@src/features/recommender/controllers/recommenderContentDiscover');
 
 const recommenderHybrid = require('@src/features/recommender/controllers/recommenderHybrid');
-const recommenderHybridWeighed = require('@src/features/recommender/controllers/recommenderHybridWeighed');
+const recommenderHybridWeighted = require('@src/features/recommender/controllers/recommenderHybridWeighted');
 
 
 
@@ -24,7 +24,7 @@ router.get('/content-based/:mediaType/:mediaId/similar', recommenderContentSimil
 router.post('/content-based/discover', recommenderContentDiscover);
 
 router.post('/hybrid', recommenderHybrid);
-router.post('/hybrid/weighed', recommenderHybridWeighed);
+router.post('/hybrid/weighted', recommenderHybridWeighted);
 
 
 module.exports = router;

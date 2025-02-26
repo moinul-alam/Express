@@ -47,7 +47,12 @@ const validateFilters = (filters) => {
 
 const mediaDiscovery = async (req, res, next) => {
     const { mediaType } = req.params;
-    const filters = req.query;
+    let filters = { ...req.query };
+
+    // Set default values if not provided
+    if (!filters.primary_release_year) filters.primary_release_year = 2022;
+    if (!filters.language) filters.language = 'en-US';
+    if (!filters.sort_by) filters.sort_by = 'popularity.desc';
 
     // Validate media type
     const mediaTypeError = validateMediaType(mediaType);

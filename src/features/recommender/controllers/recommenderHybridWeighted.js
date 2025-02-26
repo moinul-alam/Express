@@ -5,7 +5,7 @@ const fetchMediaDetailsService = require('@src/features/recommender/services/fet
 
 const fetchRecommenderResponse = async (payload) => {
   try {
-    const response = await apiCore.post('/hybrid/v1/recommendations/weighed', payload);
+    const response = await apiCore.post('/hybrid/v1/recommendations/weighted', payload);
 
     if (!response || response.status !== 200) {
       throw new Error('Failed to fetch recommendations from the service');
@@ -42,7 +42,7 @@ const fetchMediaDetails = async (mediaType, tmdbIdList) => {
   return mediaDetailsArray.filter(details => details !== null);
 };
 
-const recommenderHybridWeighed = async (req, res, next) => {
+const recommenderHybridWeighted = async (req, res, next) => {
   const { mediaType = 'movie', ratings } = req.body;
 
   console.log('Received Ratings:', ratings);
@@ -133,4 +133,4 @@ const recommenderHybridWeighed = async (req, res, next) => {
   }
 };
 
-module.exports = recommenderHybridWeighed;
+module.exports = recommenderHybridWeighted;
