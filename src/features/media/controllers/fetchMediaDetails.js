@@ -10,13 +10,17 @@ const SAVE_TO_DB = true;
 const fetchMediaDetails = async (req, res, next) => {
   const { mediaType, id } = req.params;
   const parsedId = parseInt(id, 10);
+  
+  // Variable declared at the top level of the function to ensure it's accessible throughout
+  let existingMedia = null;
 
   if (isNaN(parsedId)) {
     return errorResponse(res, 'Invalid media ID', 400);
   }
 
   try {
-    const existingMedia = await Media.findOne({ tmdb_id: parsedId, media_type: mediaType });
+    // Find the media in the database
+    existingMedia = await Media.findOne({ tmdb_id: parsedId, media_type: mediaType });
 
     if (existingMedia) {
       const isOutdated = new Date() - new Date(existingMedia.updatedAt) > 7 * 24 * 60 * 60 * 1000;
@@ -65,6 +69,7 @@ const fetchMediaDetails = async (req, res, next) => {
       return errorResponse(res, 'Error fetching media details from TMDB', 500, error.message);
     }
 
+    // Validate all required data is present
     if (!mediaDetails || !trailerDetails || !creditDetails || !keywordDetails) {
       console.error('Incomplete data received from TMDB.');
       
@@ -83,7 +88,7 @@ const fetchMediaDetails = async (req, res, next) => {
       return errorResponse(res, 'Incomplete data received from TMDB', 500, 'Some data fields are missing.');
     }
 
-    const officialTrailer = (trailerDetails.data.results || []).find(
+    const officialTrailer = (trailerDetails.data && trailerDetails.data.results || []).find(
       (video) => video.type === 'Trailer' && video.official === true
     );
     const trailerKey = officialTrailer ? officialTrailer.key : null;
@@ -96,19 +101,32 @@ const fetchMediaDetails = async (req, res, next) => {
 
       if (existingMedia) {
         console.warn('Returning existing media as a fallback.');
+        const reviews = await Review.find({ mediaId: existingMedia._id })
+          .select('rating comment createdAt')
+          .populate('userId', 'username');
+        
         return successResponse(res, 'Returning existing media due to credit formatting error', {
           ...existingMedia.toObject(),
-          reviews: await Review.find({ mediaId: existingMedia._id }).select('rating comment createdAt'),
+          reviews,
         });
       }
 
       return errorResponse(res, 'Error formatting credits', 500, error.message);
     }
 
-    const keywords = (keywordDetails.data.keywords || keywordDetails.data.results || []).map((keyword) => ({
-      id: keyword.id,
-      name: keyword.name,
-    }));
+    // Safely extract keywords
+    const keywords = [];
+    if (keywordDetails && keywordDetails.data) {
+      const keywordSource = keywordDetails.data.keywords || keywordDetails.data.results || [];
+      keywordSource.forEach(keyword => {
+        if (keyword && typeof keyword.id === 'number' && typeof keyword.name === 'string') {
+          keywords.push({
+            id: keyword.id,
+            name: keyword.name,
+          });
+        }
+      });
+    }
 
     let data;
     try {
@@ -118,9 +136,13 @@ const fetchMediaDetails = async (req, res, next) => {
 
       if (existingMedia) {
         console.warn('Returning existing media as a fallback.');
+        const reviews = await Review.find({ mediaId: existingMedia._id })
+          .select('rating comment createdAt')
+          .populate('userId', 'username');
+        
         return successResponse(res, 'Returning existing media due to media data formatting error', {
           ...existingMedia.toObject(),
-          reviews: await Review.find({ mediaId: existingMedia._id }).select('rating comment createdAt'),
+          reviews,
         });
       }
 
@@ -146,9 +168,13 @@ const fetchMediaDetails = async (req, res, next) => {
 
         if (existingMedia) {
           console.warn('Returning existing media as a fallback.');
+          const reviews = await Review.find({ mediaId: existingMedia._id })
+            .select('rating comment createdAt')
+            .populate('userId', 'username');
+          
           return successResponse(res, 'Returning existing media due to DB save error', {
             ...existingMedia.toObject(),
-            reviews: await Review.find({ mediaId: existingMedia._id }).select('rating comment createdAt'),
+            reviews,
           });
         }
 
@@ -156,21 +182,44 @@ const fetchMediaDetails = async (req, res, next) => {
       }
     }
 
-    const mediaId = updatedMedia ? updatedMedia._id : existingMedia._id;
-    const reviews = await Review.find({ mediaId })
-      .populate('userId', 'username')
-      .select('rating comment createdAt');
+    const mediaId = updatedMedia ? updatedMedia._id : (existingMedia ? existingMedia._id : null);
+    
+    // Only try to fetch reviews if we have a valid mediaId
+    let reviews = [];
+    if (mediaId) {
+      try {
+        reviews = await Review.find({ mediaId })
+          .populate('userId', 'username')
+          .select('rating comment createdAt');
+      } catch (error) {
+        console.error(`Error fetching reviews: ${error.message}`);
+        // Continue without reviews rather than failing the entire request
+      }
+    }
 
     return successResponse(res, 'Media details fetched successfully', { ...data, reviews });
   } catch (error) {
     console.error(`Unexpected error in fetchMediaDetails: ${error.message}`);
 
+    // This now works because existingMedia is declared at the function level
     if (existingMedia) {
       console.warn('Returning existing media as a fallback.');
-      return successResponse(res, 'Returning existing media due to an unexpected error', {
-        ...existingMedia.toObject(),
-        reviews: await Review.find({ mediaId: existingMedia._id }).select('rating comment createdAt'),
-      });
+      try {
+        const reviews = await Review.find({ mediaId: existingMedia._id })
+          .populate('userId', 'username')
+          .select('rating comment createdAt');
+        
+        return successResponse(res, 'Returning existing media due to an unexpected error', {
+          ...existingMedia.toObject(),
+          reviews,
+        });
+      } catch (reviewError) {
+        console.error(`Error fetching reviews in error handler: ${reviewError.message}`);
+        return successResponse(res, 'Returning existing media due to an unexpected error', {
+          ...existingMedia.toObject(),
+          reviews: [],
+        });
+      }
     }
 
     return errorResponse(res, 'Unexpected error fetching media details', 500, error.message);
