@@ -11,11 +11,10 @@ const fetchMediaDetails = async (req, res, next) => {
   const { mediaType, id } = req.params;
   const parsedId = parseInt(id, 10);
   
-  // Variable declared at the top level of the function to ensure it's accessible throughout
   let existingMedia = null;
 
   if (isNaN(parsedId)) {
-    return errorResponse(res, 'Invalid media ID', 400);
+    return errorResponse(res, 'Invalid media ID', null, 400);
   }
 
   try {
@@ -66,7 +65,7 @@ const fetchMediaDetails = async (req, res, next) => {
         });
       }
 
-      return errorResponse(res, 'Error fetching media details from TMDB', 500, error.message);
+      return errorResponse(res, 'Error fetching media details from TMDB', error.message, 500);
     }
 
     // Validate all required data is present
@@ -85,7 +84,7 @@ const fetchMediaDetails = async (req, res, next) => {
         });
       }
 
-      return errorResponse(res, 'Incomplete data received from TMDB', 500, 'Some data fields are missing.');
+      return errorResponse(res, 'Incomplete data received from TMDB', 'Some data fields are missing.', 500);
     }
 
     const officialTrailer = (trailerDetails.data && trailerDetails.data.results || []).find(
@@ -111,7 +110,7 @@ const fetchMediaDetails = async (req, res, next) => {
         });
       }
 
-      return errorResponse(res, 'Error formatting credits', 500, error.message);
+      return errorResponse(res, 'Error formatting credits', error.message, 500);
     }
 
     // Safely extract keywords
@@ -146,7 +145,7 @@ const fetchMediaDetails = async (req, res, next) => {
         });
       }
 
-      return errorResponse(res, 'Error formatting media data', 500, error.message);
+      return errorResponse(res, 'Error formatting media data', error.message, 500);
     }
 
     let updatedMedia;
@@ -178,7 +177,7 @@ const fetchMediaDetails = async (req, res, next) => {
           });
         }
 
-        return errorResponse(res, 'Error saving media data to DB', 500, error.message);
+        return errorResponse(res, 'Error saving media data to DB', error.message, 500);
       }
     }
 
@@ -222,7 +221,7 @@ const fetchMediaDetails = async (req, res, next) => {
       }
     }
 
-    return errorResponse(res, 'Unexpected error fetching media details', 500, error.message);
+    return errorResponse(res, 'Unexpected error fetching media details', error.message, 500);
   }
 };
 
