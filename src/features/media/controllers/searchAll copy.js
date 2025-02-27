@@ -21,7 +21,6 @@ const searchMedia = async (req, res, next) => {
       mediaType: item.media_type,
       title: item.title || item.name || '',
       overview: item.overview || '',
-      poster_path: item.poster_path,
       release_date: item.release_date || item.first_air_date,
       vote_average: item.vote_average || 0,
     }));
