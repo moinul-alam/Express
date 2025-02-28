@@ -1,6 +1,6 @@
 const api = require('@src/utils/api');
 
-const MAX_RETRIES = 3;
+const MAX_RETRIES = 5;
 const RETRY_DELAY = 1000; // 1 second
 
 const fetchWithRetry = async (url, retries = MAX_RETRIES) => {
