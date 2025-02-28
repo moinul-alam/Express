@@ -10,6 +10,7 @@ const recommenderContentDiscover = require('@src/features/recommender/controller
 
 const recommenderHybrid = require('@src/features/recommender/controllers/recommenderHybrid');
 const recommenderHybridWeighted = require('@src/features/recommender/controllers/recommenderHybridWeighted');
+const recommenderHybridSwitching = require('@src/features/recommender/controllers/recommenderHybridSwitching');
 
 
 
@@ -25,6 +26,7 @@ router.post('/content-based/discover', recommenderContentDiscover);
 
 router.post('/hybrid', recommenderHybrid);
 router.post('/hybrid/weighted', recommenderHybridWeighted);
+router.post('/hybrid/switching', recommenderHybridSwitching);
 
 
 module.exports = router;

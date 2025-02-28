@@ -15,7 +15,7 @@ const fetchRecommenderResponse = async (ratings) => {
       throw new Error('Invalid response format from recommendation service');
     }
 
-    return response.data.map(item => item.tmdb_id);
+    return response.data.map(item => item.tmdb_id).filter(Boolean); // Filter out invalid or missing IDs
   } catch (error) {
     console.error('Error connecting to the recommendation service:', error.message);
 
@@ -27,38 +27,66 @@ const fetchRecommenderResponse = async (ratings) => {
   }
 };
 
-const fetchMediaDetails = async (mediaType, tmdbIdList) => {
-  const mediaDetailsPromises = tmdbIdList.map(async (tmdbId) => {
-    try {
-      const mediaDetails = await api.get(`/${mediaType}/${tmdbId}`);
-      return mediaDetails.data;
-    } catch (error) {
-      console.error(`Failed to fetch details for TMDB ID ${tmdbId}:`, error.message);
-      return null; // Skip failed fetches
+const validateRatings = (ratings) => {
+  if (typeof ratings !== 'object' || ratings === null || Object.keys(ratings).length === 0) {
+    return false;
+  }
+
+  for (const [key, value] of Object.entries(ratings)) {
+    if (
+      (typeof key !== 'string' && typeof key !== 'number') || 
+      typeof value !== 'number' || 
+      value < 1 || 
+      value > 5
+    ) {
+      console.warn(`Invalid rating entry skipped: ${key}: ${value}`);
+      return false;
     }
-  });
-
-  const mediaDetailsArray = await Promise.all(mediaDetailsPromises);
-
-  // Filter out failed fetches (null values)
-  return mediaDetailsArray.filter(details => details !== null);
+  }
+  return true;
 };
 
 const recommenderCollabUser = async (req, res, next) => {
-  // Set default mediaType to "movie" if not provided
   const { mediaType = 'movie', ratings } = req.body;
+
+  if (!validateRatings(ratings)) {
+    console.error('Invalid ratings input received:', ratings);
+    return errorResponse(res, 'Invalid ratings format. Expected {tmdb_id: rating}', 400);
+  }
 
   try {
     console.log('Collaborative Filtering: TMDB ID and Ratings:', ratings);
-    
-    const mediaList = await fetchRecommenderResponse(ratings);
 
-    if (!mediaList || mediaList.length === 0) {
+    const recommendedMediaIds = await fetchRecommenderResponse(ratings);
+
+    if (!recommendedMediaIds || recommendedMediaIds.length === 0) {
       console.log('No recommendations found for the given ratings.');
       return errorResponse(res, 'No recommendations found', []);
     }
 
-    const mediaDetailsArray = await fetchMediaDetails(mediaType, mediaList);
+    const mediaDetailsPromises = recommendedMediaIds.map(async (tmdbId) => {
+      try {
+        const mediaDetails = await fetchMediaDetailsService(mediaType, tmdbId);
+
+        if (!mediaDetails || mediaDetails.status === 'not_found' || !mediaDetails.data) {
+          console.warn(`Skipping TMDB ID ${tmdbId} due to missing details.`);
+          return null;
+        }
+
+        return mediaDetails.data;
+      } catch (error) {
+        console.error(`Failed to fetch details for TMDB ID ${tmdbId}:`, error.message);
+        return null;
+      }
+    });
+
+    let mediaDetailsArray = await Promise.all(mediaDetailsPromises);
+    mediaDetailsArray = mediaDetailsArray.filter(Boolean);
+
+    if (mediaDetailsArray.length === 0) {
+      return errorResponse(res, 'Failed to fetch details for recommended items', []);
+    }
+
     return successResponse(res, 'Similar media fetched successfully', mediaDetailsArray);
   } catch (error) {
     console.error('Error:', error.message);
