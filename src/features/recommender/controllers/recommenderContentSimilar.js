@@ -16,35 +16,36 @@ const recommenderContentSimilar = async (req, res, next) => {
     const metadata = result.data;
 
     const formattedMetadata = {
-      tmdb_id: parseInt(metadata.tmdb_id, 10),
-      metadata: {
-        media_type: metadata.media_type || mediaType,
-        title: metadata.title || '',
-        overview: metadata.overview || '',
-        spoken_languages: metadata.spoken_languages ? metadata.spoken_languages.map(lang => lang.iso_639_1) : [],
-        vote_average: typeof metadata.vote_average === 'number' ? metadata.vote_average : 0,
-        release_year: metadata.release_date ? new Date(metadata.release_date).getFullYear().toString() : '',
-        genres: metadata.genres ? metadata.genres.map(genre => genre.name) : [],
-        director: metadata.credits
-          ? metadata.credits
-              .filter(credit => credit.type === 'director' || credit.type === 'creator')
-              .map(director => director.name)
-          : [],
-        cast: metadata.credits
-          ? metadata.credits.filter(credit => credit.type === 'cast').map(cast => cast.name)
-          : [],
-        keywords: metadata.keywords ? metadata.keywords.map(keyword => keyword.name) : [],
-      },
+      items: [{
+        tmdb_id: parseInt(metadata.tmdb_id, 10),
+        rating: 0,
+        metadata: {
+          media_type: metadata.media_type || mediaType,
+          title: metadata.title || '',
+          overview: metadata.overview || '',
+          spoken_languages: metadata.spoken_languages ? metadata.spoken_languages.map(lang => lang.iso_639_1) : [],
+          vote_average: typeof metadata.vote_average === 'number' ? metadata.vote_average : 0,
+          release_year: metadata.release_date ? new Date(metadata.release_date).getFullYear().toString() : '',
+          genres: metadata.genres ? metadata.genres.map(genre => genre.name) : [],
+          director: metadata.credits ? metadata.credits.filter(credit => credit.type === 'director' || credit.type === 'creator').map(director => director.name) : [],
+          cast: metadata.credits ? metadata.credits.filter(credit => credit.type === 'cast').map(cast => cast.name) : [],
+          keywords: metadata.keywords ? metadata.keywords.map(keyword => keyword.name) : [],
+        }
+      }],
+      n_recommendations: 10
     };
 
     try {
-      const recommenderResponse = await apiCore.post('/content-based/v2/similar', formattedMetadata);
+      const recommenderResponse = await apiCore.post('/content-based/v2/similar-items', formattedMetadata);
 
-      if (!recommenderResponse || recommenderResponse.status !== 200) {
+      console.log('Recommender Response: ', recommenderResponse.data);
+
+
+      if (!recommenderResponse.data || recommenderResponse.status !== 200) {
         throw new Error('Failed to fetch recommendations from the service');
       }
 
-      const similarMediaList = recommenderResponse.data.similarMedia;
+      const similarMediaList = recommenderResponse.data.recommendations;
 
       // Fetch details of each similar media item
       const mediaDetailsPromises = similarMediaList.map(async (similarMedia) => {
