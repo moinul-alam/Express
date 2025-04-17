@@ -21,7 +21,7 @@ router.post('/content-based/get-metadata', getMetadata);
 router.post('/collaborative/user-based-recommendations', recommenderCollabUser);
 router.post('/collaborative/item-based-recommendations', recommenderCollabItem);
 
-router.get('/content-based/:mediaType/:mediaId/similar', recommenderContentSimilar);
+router.post('/content-based/similar-items', recommenderContentSimilar);
 router.post('/content-based/discover', recommenderContentDiscover);
 
 router.post('/hybrid', recommenderHybrid);
