@@ -38,13 +38,13 @@ const personSchema = new Schema({
     acting: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'media',
+        ref: 'Media',
       },
     ],
     directing: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'media',
+        ref: 'Media',
       },
     ], 
   },
@@ -52,13 +52,13 @@ const personSchema = new Schema({
     acting: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'media',
+        ref: 'Media',
       },
     ], 
     directing: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'media',
+        ref: 'Media',
       },
     ],
   },
