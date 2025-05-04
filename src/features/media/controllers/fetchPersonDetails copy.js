@@ -17,46 +17,34 @@ const fetchPersonDetails = async (req, res, next) => {
     const isOutdated = person && new Date() - new Date(person.updatedAt) > 7 * 24 * 60 * 60 * 1000;
 
     if (person && !isOutdated) {
-      console.log('Person found in DB:', person._id);
-      
-      // Debug the structure of movie_credits and tv_credits
-      console.log('Movie credits structure:', JSON.stringify(person.movie_credits));
-      console.log('TV credits structure:', JSON.stringify(person.tv_credits));
-      
-      // Make sure we're passing arrays of ObjectIds
-      const actingMovieIds = Array.isArray(person.movie_credits.acting) ? person.movie_credits.acting : [];
-      const directingMovieIds = Array.isArray(person.movie_credits.directing) ? person.movie_credits.directing : [];
-      const actingTVIds = Array.isArray(person.tv_credits.acting) ? person.tv_credits.acting : [];
-      const directingTVIds = Array.isArray(person.tv_credits.directing) ? person.tv_credits.directing : [];
-      
-      // Debug the IDs we're passing to resolveMediaData
-      console.log('Acting movie IDs:', actingMovieIds);
-      
       // Resolve media references (ObjectId) for movie_credits and tv_credits before returning
-      const resolvedActingMovies = await resolveMediaData(actingMovieIds);
-      const resolvedDirectingMovies = await resolveMediaData(directingMovieIds);
-      const resolvedActingTV = await resolveMediaData(actingTVIds);
-      const resolvedDirectingTV = await resolveMediaData(directingTVIds);
-      
-      // Debug the resolved data
-      console.log('Resolved acting movies count:', resolvedActingMovies.length);
+      const resolvedActingMovies = await resolveMediaData(person.movie_credits.acting);
+      const resolvedDirectingMovies = await resolveMediaData(person.movie_credits.directing);
+      const resolvedActingTV = await resolveMediaData(person.tv_credits.acting);
+      const resolvedDirectingTV = await resolveMediaData(person.tv_credits.directing);
+
+      // Update person object with resolved data
+      person.movie_credits.acting = resolvedActingMovies;
+      person.movie_credits.directing = resolvedDirectingMovies;
+      person.tv_credits.acting = resolvedActingTV;
+      person.tv_credits.directing = resolvedDirectingTV;
 
       // Create a resolved person object for the response
-      const resolvedPerson = {
-        ...person.toObject(), // Convert Mongoose document to plain object
-        movie_credits: {
-          acting: resolvedActingMovies,
-          directing: resolvedDirectingMovies,
-        },
-        tv_credits: {
-          acting: resolvedActingTV,
-          directing: resolvedDirectingTV,
-        },
-      };
+    const resolvedPerson = {
+      ...person.toObject(), // Convert Mongoose document to plain object
+      movie_credits: {
+        acting: resolvedActingMovies,
+        directing: resolvedDirectingMovies,
+      },
+      tv_credits: {
+        acting: resolvedActingTV,
+        directing: resolvedDirectingTV,
+      },
+    };
 
-      console.log('Person details found in DB. Resolving media data and returning...');
+    console.log('Person details found in DB. Resolving media data and returning...', resolvedPerson);
 
-      return successResponse(res, 'Person details retrieved successfully', resolvedPerson);
+    return successResponse(res, 'Person details saved successfully', resolvedPerson);
     }
 
     const { personDetails, movieCredits, tvCredits } = await fetchPersonDetailsFromTMDB(person_id);
@@ -88,29 +76,6 @@ const fetchPersonDetails = async (req, res, next) => {
       imdb_id: personDetails.imdb_id || '',
       popularity: personDetails.popularity || 0,
       movie_credits: {
-        acting: actingMoviesRefs, // Store the references, not the resolved data
-        directing: directingMoviesRefs,
-      },
-      tv_credits: {
-        acting: actingTVRefs,
-        directing: directingTVRefs,
-      },
-    };
-
-    if (SAVE_TO_DB) {
-      if (person) {
-        person = await Person.findByIdAndUpdate(person._id, personData, { new: true });
-        console.log('Existing person data updated with fresh data.');
-      } else {
-        person = await saveDataToDB(Person, personData);
-        console.log('New person data saved to DB.');
-      }
-    }
-    
-    // Create final response object with resolved media data
-    const responseData = {
-      ...personData,
-      movie_credits: {
         acting: resolvedActingMovies,
         directing: resolvedDirectingMovies,
       },
@@ -120,7 +85,17 @@ const fetchPersonDetails = async (req, res, next) => {
       },
     };
 
-    return successResponse(res, 'Person details saved successfully', responseData);
+    if (SAVE_TO_DB) {
+      if (person) {
+        await Person.findByIdAndUpdate(person._id, personData, { new: true });
+        console.log('Existing person data updated with fresh data.');
+      } else {
+        person = await saveDataToDB(Person, personData);
+        console.log('New person data saved to DB.');
+      }
+    }
+
+    return successResponse(res, 'Person details saved successfully', person || personDetails);
   } catch (error) {
     console.error(`Error fetching person details for ID: ${person_id}`, error.message);
     return errorResponse(res, 'Error fetching person details', 500, error.message);
