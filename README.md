@@ -1,2 +1,2 @@
 # core-back
- Backend of CorRE Project
+ Backend of CoRE Project
